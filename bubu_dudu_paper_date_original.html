@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bubu & Dudu — Paper Date</title>
+<style>
+:root{
+  --ink:#573743; --rose:#ed799e; --rose2:#f8b4ca; --cream:#fff9f2;
+  --paper:#fffdf8; --leaf:#72aa63; --leaf2:#4f8f4e; --cardboard:#b9855b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#efb8ca;font-family:"Trebuchet MS","Arial Rounded MT Bold",system-ui,sans-serif;color:var(--ink)}
+button,input{font:inherit}
+button{color:inherit}
+#app{position:fixed;inset:0;overflow:hidden;background:linear-gradient(#f1b5ca 0 38%,#f9dce5 60%,#f6e8dc)}
+#sky{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.sun{position:absolute;right:13%;top:7%;width:18vmin;height:18vmin;border-radius:50%;background:radial-gradient(circle,#fff7cc 0 28%,rgba(255,244,192,.56) 52%,rgba(255,244,192,0) 74%)}
+.cloud{position:absolute;width:210px;height:64px;background:#fffaf3;border:4px solid rgba(87,55,67,.16);border-radius:999px;box-shadow:0 7px 0 rgba(87,55,67,.08);opacity:.95}
+.cloud:before,.cloud:after{content:"";position:absolute;background:inherit;border:inherit;border-radius:50%;bottom:9px}
+.cloud:before{width:76px;height:76px;left:28px}.cloud:after{width:102px;height:102px;right:27px}
+.c1{left:9%;top:10%;transform:scale(.82) rotate(-2deg)}.c2{right:7%;top:23%;transform:scale(.58) rotate(2deg)}
+#hillBack,#hillFront{position:absolute;left:-5%;width:110%;pointer-events:none}
+#hillBack{top:29%;height:30%;background:#b9ce8f;clip-path:polygon(0 64%,8% 41%,17% 56%,27% 25%,39% 58%,49% 36%,59% 58%,70% 22%,81% 56%,91% 35%,100% 59%,100% 100%,0 100%);filter:drop-shadow(0 -4px 0 rgba(87,55,67,.12))}
+#hillFront{top:36%;height:29%;background:#89b875;clip-path:polygon(0 62%,11% 44%,24% 60%,35% 37%,47% 60%,58% 42%,72% 63%,84% 38%,100% 60%,100% 100%,0 100%);filter:drop-shadow(0 -4px 0 rgba(87,55,67,.16))}
+.paper-specks{position:absolute;inset:0;opacity:.15;background-image:radial-gradient(rgba(87,55,67,.18) .7px,transparent .7px);background-size:13px 15px;mix-blend-mode:multiply;pointer-events:none}
+
+#viewport{position:absolute;inset:0;perspective:1100px;perspective-origin:50% 42%;overflow:hidden}
+#world{position:absolute;left:50%;top:72%;width:0;height:0;transform-style:preserve-3d;transform:rotateX(64deg)}
+#groundEdge,#ground{position:absolute;left:-720px;top:-820px;width:1440px;height:1450px;border-radius:44px;transform-style:preserve-3d}
+#groundEdge{background:repeating-linear-gradient(0deg,#b88660 0 5px,#c18e67 5px 9px);transform:translateZ(-18px);box-shadow:0 40px 80px rgba(62,28,42,.2)}
+#ground{
+  transform:translateZ(0);
+  border:4px solid rgba(87,55,67,.24);
+  background:
+    radial-gradient(circle at 18% 21%,rgba(255,255,255,.14) 0 1px,transparent 2px) 0 0/19px 23px,
+    repeating-linear-gradient(16deg,rgba(57,113,56,.035) 0 1px,transparent 1px 12px),
+    #80b96c;
+  overflow:hidden;
+  box-shadow:inset 0 0 90px rgba(60,103,47,.12)
+}
+#path{position:absolute;left:50%;top:-120px;width:205px;height:1190px;transform:translateX(-50%);background:
+    repeating-linear-gradient(90deg,rgba(116,73,51,.04) 0 2px,transparent 2px 23px),
+    repeating-linear-gradient(7deg,rgba(255,255,255,.09) 0 1px,transparent 1px 15px),
+    #d8aa7d;
+  border-left:4px solid rgba(87,55,67,.15);border-right:4px solid rgba(87,55,67,.15)
+}
+#pond{position:absolute;left:166px;top:415px;width:360px;height:225px;border-radius:50%;background:
+  repeating-radial-gradient(ellipse at center,rgba(255,255,255,.28) 0 2px,transparent 3px 27px),
+  #77c9dc;border:5px solid rgba(87,55,67,.2);box-shadow:inset 0 0 30px rgba(51,112,130,.2)}
+#pond:after{content:"";position:absolute;inset:18px;border-radius:50%;border:3px dashed rgba(255,255,255,.34)}
+#flowerBed{position:absolute;inset:0;background-image:
+  radial-gradient(circle,#ffd86c 0 3px,#e76f98 4px 8px,transparent 9px),
+  radial-gradient(circle,#fff7ee 0 3px,#f3a7bf 4px 8px,transparent 9px);
+  background-size:130px 155px,173px 137px;background-position:19px 35px,81px 91px;opacity:.48;mask-image:linear-gradient(90deg,#000 0 38%,transparent 43% 57%,#000 62%)}
+
+.prop,.actor{position:absolute;left:0;top:0;transform-style:preserve-3d;transform-origin:50% 100%;will-change:transform}
+.billboard{position:absolute;left:0;bottom:0;transform-origin:50% 100%;transform:rotateX(-64deg) translate(-50%,0);filter:drop-shadow(7px 10px 0 rgba(87,55,67,.13));pointer-events:none}
+.billboard svg{display:block;overflow:visible}
+.actor .billboard{transition:filter .15s}
+.actor.active .billboard{filter:drop-shadow(7px 10px 0 rgba(87,55,67,.13)) drop-shadow(0 0 11px rgba(255,245,164,.75))}
+.shadowDisc{position:absolute;left:0;top:0;width:100px;height:36px;border-radius:50%;background:rgba(76,43,56,.16);transform:translate(-50%,-50%) translateZ(1px);filter:blur(.3px);pointer-events:none}
+.actor .shadowDisc{width:82px;height:28px}
+#bouquet{display:none}
+#bouquet .billboard{width:112px}
+
+#arch .billboard{width:335px}
+.tree .billboard{width:185px}
+.bush .billboard{width:135px}
+.fence .billboard{width:270px}
+#sign .billboard{width:190px}
+.actor .billboard{width:172px}
+.actor.near .billboard{width:184px}
+.actorArt{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .2s;filter:drop-shadow(0 0 1px rgba(87,55,67,.2))}
+.actorArt.loaded{opacity:1}.actorArt.loaded + svg{opacity:0}
+
+#fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.heart{position:absolute;width:26px;height:23px;background:#ed688f;transform:rotate(45deg);border-radius:6px 5px 6px 0;filter:drop-shadow(0 3px 0 rgba(87,55,67,.13));animation:heartFly var(--d) ease-out forwards}
+.heart:before,.heart:after{content:"";position:absolute;background:inherit;border-radius:50%;width:26px;height:26px}
+.heart:before{left:-13px;top:0}.heart:after{left:0;top:-13px}
+@keyframes heartFly{0%{opacity:0;transform:translate(0,10px) rotate(45deg) scale(.3)}12%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(calc(45deg + var(--r))) scale(var(--s))}}
+.petal{position:absolute;width:12px;height:7px;border-radius:90% 20% 90% 20%;background:#f596b4;opacity:.8;animation:petalFall var(--d) linear forwards}
+@keyframes petalFall{from{transform:translate(0,-30px) rotate(0)}to{transform:translate(var(--x),calc(100vh + 60px)) rotate(530deg);opacity:.1}}
+
+#ui{position:absolute;inset:0;pointer-events:none}
+.paperUI{background:rgba(255,252,247,.94);border:2px solid rgba(87,55,67,.17);border-radius:16px;box-shadow:0 6px 0 rgba(87,55,67,.12),0 16px 34px rgba(87,55,67,.1)}
+#hud{position:absolute;left:16px;top:16px;padding:10px 13px;min-width:260px;font-size:13px;line-height:1.45;display:none}
+#hud strong{font-size:15px}
+#quest{position:absolute;right:16px;top:16px;display:none;gap:7px;padding:8px 9px}
+.q{padding:7px 10px;border-radius:999px;background:#efe4e6;font-size:12px;font-weight:900;opacity:.55}
+.q.on{background:#f7a5bf;opacity:1}.q.done{background:#dcedd6;color:#37623b;opacity:1}
+#prompt{position:absolute;left:50%;bottom:23px;transform:translateX(-50%);padding:11px 18px;min-width:290px;max-width:min(760px,calc(100vw - 32px));text-align:center;font-weight:900;font-size:15px;display:none;transition:transform .15s}
+#prompt.pop{transform:translateX(-50%) scale(1.05)}
+#music{position:absolute;right:16px;bottom:18px;pointer-events:auto;border:0;padding:9px 12px;font-weight:900;cursor:pointer}
+#toast{position:absolute;left:50%;top:16%;transform:translate(-50%,-50%) scale(.8);padding:10px 17px;font-weight:1000;font-size:22px;opacity:0;transition:.2s;color:#8b3657}
+#toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+#cinematic{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;background:rgba(92,46,64,.07)}
+#cinematic.show{display:flex}
+#photo{width:min(420px,74vw);padding:13px 13px 34px;background:#fffdf7;border:2px solid rgba(87,55,67,.18);box-shadow:9px 13px 0 rgba(87,55,67,.15),0 25px 60px rgba(66,29,44,.2);transform:rotate(-2deg) scale(.7);opacity:0;transition:.24s}
+#cinematic.show #photo{transform:rotate(-2deg) scale(1);opacity:1}
+#actionImg{display:block;width:100%;aspect-ratio:1/1;object-fit:contain;background:#fff;border:1px solid #efe1df}
+#photoLabel{text-align:center;margin-top:8px;font-weight:1000;color:#7d3b57}
+#actionFallback{display:none;position:relative;width:100%;aspect-ratio:1/1;align-items:flex-end;justify-content:center;overflow:hidden;background:linear-gradient(#fffaf6 0 64%,#f3ddcd 64% 67%,#f5e8da 67%);padding:28px 24px 44px}
+#actionFallback:before{content:"";position:absolute;left:10%;right:10%;bottom:18%;height:18%;border-radius:50%;background:rgba(87,55,67,.08);transform:scaleY(.34)}
+.fallbackPair{position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:10px}
+.fallbackPair svg{width:42%;height:82%;overflow:visible;filter:drop-shadow(6px 8px 0 rgba(87,55,67,.11))}
+.fallbackPair .miniBouquet{position:absolute;width:28%;height:42%;left:50%;bottom:17%;transform:translateX(-50%) rotate(-7deg);filter:drop-shadow(4px 5px 0 rgba(87,55,67,.1))}
+.fallbackPair.kissing svg:first-child{transform:translateX(15px) rotate(3deg)}
+.fallbackPair.kissing svg:nth-child(2){transform:translateX(-15px) rotate(-3deg)}
+.fallbackHeart{position:absolute;left:50%;top:8%;transform:translateX(-50%);font-size:54px;animation:pulseHeart .55s ease-in-out infinite alternate}
+@keyframes pulseHeart{from{transform:translateX(-50%) scale(.88)}to{transform:translateX(-50%) scale(1.08)}}
+
+#menu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(77,36,53,.26);backdrop-filter:blur(5px);pointer-events:auto}
+#menuCard{position:relative;width:min(790px,100%);padding:26px;overflow:hidden;text-align:center}
+#menuCard:before{content:"";position:absolute;inset:-20px;background-image:radial-gradient(rgba(237,121,158,.17) 1.5px,transparent 1.5px);background-size:22px 22px;pointer-events:none}
+.menuInner{position:relative}
+h1{margin:0;font-size:clamp(34px,6vw,55px);letter-spacing:-2px}
+.tag{font-size:14px;line-height:1.5;max-width:610px;margin:8px auto 18px}
+#dedication{width:min(530px,100%);border:2px solid #ead7dc;background:#fff;color:var(--ink);outline:none;border-radius:13px;padding:10px 13px;font-size:14px;margin-bottom:17px}
+#dedication:focus{border-color:#e881a6;box-shadow:0 0 0 4px rgba(232,129,166,.14)}
+.chooseLabel{font-size:12px;font-weight:1000;margin:0 0 9px;letter-spacing:.8px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:600px;margin:auto}
+.choose{position:relative;border:2px solid #ead7dc;background:#fffaf7;border-radius:19px;padding:11px;cursor:pointer;min-height:210px;transition:.15s;overflow:hidden}
+.choose:hover{transform:translateY(-3px);border-color:#e987aa;box-shadow:0 10px 28px rgba(87,55,67,.13)}
+.choose svg{width:155px;height:155px;filter:drop-shadow(6px 8px 0 rgba(87,55,67,.1))}
+.choose strong{display:block;font-size:20px}.choose small{opacity:.7}
+.tips{margin-top:17px;font-size:12px;opacity:.72;line-height:1.55}
+kbd{display:inline-block;padding:2px 6px;min-width:25px;border:1px solid #d9c4ca;border-radius:6px;background:#f1e5e8;box-shadow:0 2px 0 #ceb9c0;font-weight:900}
+
+#mobile{display:none;position:absolute;left:10px;right:10px;bottom:10px;justify-content:space-between;align-items:end;pointer-events:none}
+.dpad,.acts{pointer-events:auto;display:grid;gap:6px}
+.dpad{grid-template:48px 48px 48px/48px 48px 48px}.dpad button,.acts button{border:1px solid rgba(87,55,67,.2);border-radius:13px;background:rgba(255,252,247,.88);box-shadow:0 4px 0 rgba(87,55,67,.14);font-weight:1000}
+.dpad .up{grid-column:2}.dpad .left{grid-row:2;grid-column:1}.dpad .down{grid-row:2;grid-column:2}.dpad .right{grid-row:2;grid-column:3}
+.acts{grid-template-columns:64px 64px}.acts button{height:58px;font-size:12px}
+@media(pointer:coarse){#mobile{display:flex}#prompt{bottom:90px}#music{bottom:91px}}
+@media(max-width:650px){#quest{display:none!important}#hud{font-size:11px;min-width:205px}.actor .billboard{width:150px}.tree .billboard{width:155px}#arch .billboard{width:280px}.choose{min-height:175px}.choose svg{width:120px;height:120px}}
+
+/* hidden svg symbols */
+#defs{position:absolute;width:0;height:0;overflow:hidden}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sky">
+    <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div>
+    <div id="hillBack"></div><div id="hillFront"></div><div class="paper-specks"></div>
+  </div>
+
+  <svg id="defs" aria-hidden="true">
+    <defs>
+      <filter id="grain"><feTurbulence baseFrequency=".9" numOctaves="2" seed="7" type="fractalNoise" result="n"/><feComposite in="n" in2="SourceGraphic" operator="in" result="t"/><feBlend in="SourceGraphic" in2="t" mode="multiply"/></filter>
+    </defs>
+    <symbol id="bubuPanda" viewBox="0 0 260 300">
+      <g stroke="#543237" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M70 73c-17-10-31-4-35 9-5 17 7 33 25 34M190 73c17-10 31-4 35 9 5 17-7 33-25 34" fill="#57302b"/>
+        <path d="M48 126C47 68 88 39 130 39s83 29 82 87c0 43-13 66-28 76 13 16 18 38 12 56-7 22-28 24-39 8-10 17-44 17-54 0-11 16-32 14-39-8-6-18-1-40 12-56-15-10-28-33-28-76z" fill="#fffdf7"/>
+        <circle cx="93" cy="128" r="8" fill="#543237" stroke="none"/><circle cx="167" cy="128" r="8" fill="#543237" stroke="none"/>
+        <path d="M120 151q10 9 20 0M130 151v5" fill="none"/>
+        <ellipse cx="73" cy="155" rx="20" ry="12" fill="#f5a2ad" stroke="none"/><ellipse cx="187" cy="155" rx="20" ry="12" fill="#f5a2ad" stroke="none"/>
+        <path d="M108 190q22 14 44 0l-8 26q-14 12-28 0z" fill="#57302b"/>
+        <path d="M70 218q-24 0-27 19 2 18 28 12M190 218q24 0 27 19-2 18-28 12" fill="#fffdf7"/>
+        <path d="M97 267q-18 8-8 21 16 8 30-4M163 267q18 8 8 21-16 8-30-4" fill="#57302b"/>
+      </g>
+      <g opacity=".18" filter="url(#grain)"><path d="M48 126C47 68 88 39 130 39s83 29 82 87c0 43-13 66-28 76 13 16 18 38 12 56-7 22-28 24-39 8-10 17-44 17-54 0-11 16-32 14-39-8-6-18-1-40 12-56-15-10-28-33-28-76z" fill="#aa8b83"/></g>
+    </symbol>
+    <symbol id="duduBear" viewBox="0 0 260 300">
+      <g stroke="#543237" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="69" cy="72" r="31" fill="#9e694f"/><circle cx="191" cy="72" r="31" fill="#9e694f"/>
+        <circle cx="69" cy="72" r="16" fill="#f1b08f"/><circle cx="191" cy="72" r="16" fill="#f1b08f"/>
+        <path d="M45 127C45 66 87 40 130 40s85 26 85 87c0 44-13 67-29 78 12 15 17 37 11 55-8 24-31 24-42 7-9 17-41 17-50 0-11 17-34 17-42-7-6-18-1-40 11-55-16-11-29-34-29-78z" fill="#d7a184"/>
+        <circle cx="93" cy="128" r="8" fill="#543237" stroke="none"/><circle cx="167" cy="128" r="8" fill="#543237" stroke="none"/>
+        <path d="M119 151q11 9 22 0M130 151v5" fill="none"/>
+        <ellipse cx="72" cy="158" rx="22" ry="15" fill="#f3ca79" stroke="none"/><ellipse cx="188" cy="158" rx="22" ry="15" fill="#f3ca79" stroke="none"/>
+        <path d="M67 218q-25 1-27 20 3 18 30 10M193 218q25 1 27 20-3 18-30 10" fill="#d7a184"/>
+        <path d="M97 267q-19 8-9 21 17 8 31-4M163 267q19 8 9 21-17 8-31-4" fill="#d7a184"/>
+      </g>
+      <g opacity=".12" filter="url(#grain)"><path d="M45 127C45 66 87 40 130 40s85 26 85 87c0 44-13 67-29 78 12 15 17 37 11 55-8 24-31 24-42 7-9 17-41 17-50 0-11 17-34 17-42-7-6-18-1-40 11-55-16-11-29-34-29-78z" fill="#673d31"/></g>
+    </symbol>
+    <symbol id="treeCut" viewBox="0 0 220 320">
+      <g stroke="#573743" stroke-width="8" stroke-linejoin="round">
+        <path d="M94 290l7-113h38l8 113z" fill="#9b6849"/>
+        <path d="M110 35c35-18 71 4 69 40 29-2 45 28 32 51 20 20 9 54-18 61-5 31-42 42-65 24-28 25-69 8-70-25-30-5-42-39-21-61-13-29 7-59 39-58 3-20 15-32 34-32z" fill="#5d9c55"/>
+        <path d="M70 91q44-31 93-10M72 145q52-27 105 0" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="5"/>
+      </g>
+    </symbol>
+    <symbol id="bushCut" viewBox="0 0 220 130">
+      <g stroke="#573743" stroke-width="7"><path d="M24 111c-22-27 2-57 30-49 0-31 37-46 57-23 20-26 61-14 62 20 31-8 51 25 31 52z" fill="#65a75d"/></g>
+      <circle cx="66" cy="76" r="8" fill="#f4a1bc"/><circle cx="141" cy="60" r="8" fill="#ffd96d"/><circle cx="170" cy="89" r="7" fill="#fff6e9"/>
+    </symbol>
+    <symbol id="fenceCut" viewBox="0 0 420 120">
+      <g fill="#b9805c" stroke="#573743" stroke-width="6" stroke-linejoin="round">
+        <path d="M22 110V28l18-19 18 19v82M113 110V28l18-19 18 19v82M204 110V28l18-19 18 19v82M295 110V28l18-19 18 19v82M386 110V28l18-19 18 19v82"/>
+        <path d="M15 53h396v24H15z"/>
+      </g>
+    </symbol>
+    <symbol id="archCut" viewBox="0 0 500 520">
+      <g stroke="#573743" stroke-width="10" stroke-linejoin="round">
+        <path d="M75 505V236C75 84 425 84 425 236v269h-46V239c0-105-258-105-258 0v266z" fill="#f4e7db"/>
+        <path d="M130 420h240v32H130zM155 451h25v54h-25zM320 451h25v54h-25z" fill="#a67050"/>
+      </g>
+      <g stroke="#573743" stroke-width="5">
+        <circle cx="101" cy="196" r="22" fill="#ef789e"/><circle cx="160" cy="124" r="22" fill="#f4a2bd"/><circle cx="250" cy="88" r="25" fill="#ed789e"/><circle cx="340" cy="124" r="22" fill="#f4a2bd"/><circle cx="399" cy="196" r="22" fill="#ef789e"/>
+      </g>
+      <g fill="#ffd66b"><circle cx="101" cy="196" r="8"/><circle cx="160" cy="124" r="8"/><circle cx="250" cy="88" r="9"/><circle cx="340" cy="124" r="8"/><circle cx="399" cy="196" r="8"/></g>
+    </symbol>
+    <symbol id="bouquetCut" viewBox="0 0 240 300">
+      <g stroke="#573743" stroke-linecap="round">
+        <path d="M120 255L70 96M120 255L91 70M120 255L119 58M120 255L150 70M120 255L174 98" stroke="#4e9254" stroke-width="8"/>
+        <path d="M51 121h138l-41 139H94z" fill="#f5d9e2" stroke-width="8" stroke-linejoin="round"/>
+        <path d="M87 203h68" stroke="#d75e8d" stroke-width="15"/>
+        <g fill="#ef719a" stroke-width="5"><circle cx="68" cy="89" r="26"/><circle cx="104" cy="65" r="27"/><circle cx="139" cy="61" r="27"/><circle cx="175" cy="91" r="26"/><circle cx="118" cy="104" r="27"/></g>
+        <g fill="#ffd66c" stroke="none"><circle cx="68" cy="89" r="8"/><circle cx="104" cy="65" r="8"/><circle cx="139" cy="61" r="8"/><circle cx="175" cy="91" r="8"/><circle cx="118" cy="104" r="8"/></g>
+      </g>
+    </symbol>
+    <symbol id="signCut" viewBox="0 0 260 190">
+      <g stroke="#573743" stroke-width="7" stroke-linejoin="round"><path d="M38 21h184v106H38z" fill="#fff8ef"/><path d="M112 127h36v60h-36z" fill="#a87351"/></g>
+      <path d="M130 55c-18-19-42 5 0 37 42-32 18-56 0-37z" fill="#ed7197"/>
+      <text x="130" y="115" text-anchor="middle" font-family="Trebuchet MS" font-size="22" font-weight="900" fill="#573743">B + D</text>
+    </symbol>
+  </svg>
+
+  <div id="viewport">
+    <div id="world">
+      <div id="groundEdge"></div>
+      <div id="ground"><div id="path"></div><div id="pond"></div><div id="flowerBed"></div></div>
+    </div>
+  </div>
+
+  <div id="fx"></div>
+
+  <div id="ui">
+    <div id="hud" class="paperUI"></div>
+    <div id="quest" class="paperUI"><span class="q" data-q="approach">1 · ACERCATE</span><span class="q" data-q="flowers">2 · FLORES</span><span class="q" data-q="kiss">3 · BESO</span></div>
+    <div id="prompt" class="paperUI"></div>
+    <button id="music" class="paperUI" type="button">♫ Música: sí</button>
+    <div id="toast" class="paperUI">💗</div>
+    <div id="cinematic"><div id="photo"><img id="actionImg" alt=""><div id="actionFallback">💕</div><div id="photoLabel"></div></div></div>
+  </div>
+
+  <div id="mobile">
+    <div class="dpad">
+      <button class="up" data-key="arrowup">▲</button><button class="left" data-key="arrowleft">◀</button>
+      <button class="down" data-key="arrowdown">▼</button><button class="right" data-key="arrowright">▶</button>
+    </div>
+    <div class="acts"><button data-action="flowers">🌷<br>FLORES</button><button data-action="kiss">💋<br>BESO</button></div>
+  </div>
+
+  <div id="menu">
+    <div id="menuCard" class="paperUI">
+      <div class="menuInner">
+        <h1>Bubu &amp; Dudu</h1>
+        <div class="tag">Una cita en un diorama de papel: personajes planos, escenario con profundidad, cartón, sombras y capas. Elegí uno, acercate al otro, regalale flores y después… 💕</div>
+        <input id="dedication" maxlength="90" value="Para vos, con todo mi amor 💗" aria-label="Dedicatoria">
+        <div class="chooseLabel">ELEGÍ A QUIÉN CONTROLAR</div>
+        <div class="choices">
+          <button id="chooseBubu" class="choose" type="button">
+            <svg viewBox="0 0 260 300"><use href="#bubuPanda"></use></svg>
+            <strong>Bubu</strong><small>panda · suave y tierno</small>
+          </button>
+          <button id="chooseDudu" class="choose" type="button">
+            <svg viewBox="0 0 260 300"><use href="#duduBear"></use></svg>
+            <strong>Dudu</strong><small>osito · juguetón y cariñoso</small>
+          </button>
+        </div>
+        <div class="tips"><kbd>WASD</kbd> o <kbd>↑↓←→</kbd> caminar · <kbd>E</kbd> flores · <kbd>Espacio</kbd> beso · <kbd>R</kbd> reiniciar · <kbd>Esc</kbd> menú</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $=s=>document.querySelector(s), world=$("#world"), fx=$("#fx"), hud=$("#hud"), prompt=$("#prompt"), quest=$("#quest"), menu=$("#menu"), cinematic=$("#cinematic"), actionImg=$("#actionImg"), actionFallback=$("#actionFallback"), photoLabel=$("#photoLabel"), toast=$("#toast");
+const U=58, X_LIMIT=8.5, Z_MIN=-8.5, Z_MAX=8.1;
+const stageState={mode:"menu",chosen:"",kisses:0,eventT:0,dedication:"",music:true};
+const key=new Set();
+const pos={
+  Bubu:{x:-1.3,z:-5.8,flip:false,bob:0},
+  Dudu:{x:1.3,z:-5.8,flip:true,bob:0}
+};
+let player=null, partner=null, bouquet=null;
+/* Optional animated references (used only if online; the game has built-in papercraft fallbacks):
+   Tenor flower animation and kiss animation; character actors also try reference GIFs, then fall back to local vector cutouts. */
+const refs={
+  flowers:"https://media.tenor.com/0cNM_9li440AAAAj/dudu-giving-flowers-bubu-flowers.gif",
+  kiss:"https://media1.tenor.com/m/AxWycUyxz34AAAAd/bubu-dudu-kiss.gif"
+};
+
+function el(tag,cls=""){const e=document.createElement(tag);if(cls)e.className=cls;return e}
+function useSvg(id,view="0 0 260 300"){
+  const s=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  s.setAttribute("viewBox",view);
+  const u=document.createElementNS("http://www.w3.org/2000/svg","use");
+  u.setAttribute("href","#"+id);s.appendChild(u);return s;
+}
+function makeBillboard(id,x,z,width,kind,view){
+  const wrap=el("div",kind||"prop");wrap.id=id;wrap.dataset.x=x;wrap.dataset.z=z;
+  const shadow=el("div","shadowDisc");wrap.appendChild(shadow);
+  const bill=el("div","billboard");bill.style.width=width+"px";bill.appendChild(useSvg(id.startsWith("actor-")?(id.includes("Bubu")?"bubuPanda":"duduBear"):id,view));wrap.appendChild(bill);
+  world.appendChild(wrap);setWorld(wrap,x,z,0,false);return wrap;
+}
+function setWorld(node,x,z,y=0,flip=false,tilt=0,scale=1){
+  node.dataset.x=x;node.dataset.z=z;
+  node.style.transform=`translate3d(${x*U}px,${z*U}px,${2+y*U}px)`;
+  const bill=node.querySelector(".billboard");
+  if(bill) bill.style.transform=`rotateX(-64deg) translate(-50%,0) scaleX(${flip?-1:1}) rotate(${tilt}rad) scale(${scale})`;
+}
+function makeProp(id,symbol,x,z,width,view="0 0 260 300",cls="prop"){
+  const wrap=el("div",cls);wrap.id=id;const shadow=el("div","shadowDisc");wrap.appendChild(shadow);
+  const bill=el("div","billboard");bill.style.width=width+"px";bill.appendChild(useSvg(symbol,view));wrap.appendChild(bill);world.appendChild(wrap);setWorld(wrap,x,z);return wrap;
+}
+
+/* papercraft set */
+makeProp("arch","archCut",0,-7.7,335,"0 0 500 520");
+makeProp("sign","signCut",-5.6,4.1,190,"0 0 260 190");
+[[-7.0,-6.7], [7.0,-6.4], [-7.7,.5], [7.6,1.0], [-6.7,6.5], [6.5,6.6], [-4.4,-8.4], [4.7,-8.3]].forEach((p,i)=>makeProp("tree"+i,"treeCut",p[0],p[1],185,"0 0 220 320","prop tree"));
+[[-5.1,-3.1],[5.2,-2.7],[-6.0,3.8],[5.9,4.0],[-3.7,-7.6],[3.8,-7.5]].forEach((p,i)=>makeProp("bush"+i,"bushCut",p[0],p[1],135,"0 0 220 130","prop bush"));
+makeProp("fenceL","fenceCut",-5.7,-4.9,270,"0 0 420 120","prop fence");
+makeProp("fenceR","fenceCut",5.7,-4.9,270,"0 0 420 120","prop fence");
+
+const actorSources={
+  Bubu:"https://i.pinimg.com/originals/a7/71/b6/a771b648079541e016d6490ae8a22818.gif",
+  Dudu:"https://media.tenor.com/HZkpmoJmsSoAAAAj/bubu-dudu.gif"
+};
+function makeActor(name){
+  const wrap=el("div","actor");wrap.id="actor-"+name;const shadow=el("div","shadowDisc");wrap.appendChild(shadow);
+  const bill=el("div","billboard");
+  const img=el("img","actorArt");img.alt=name;img.src=actorSources[name];img.onload=()=>img.classList.add("loaded");img.onerror=()=>img.remove();bill.appendChild(img);
+  bill.appendChild(useSvg(name==="Bubu"?"bubuPanda":"duduBear"));wrap.appendChild(bill);world.appendChild(wrap);return wrap;
+}
+const actors={Bubu:makeActor("Bubu"),Dudu:makeActor("Dudu")};
+bouquet=makeProp("bouquet","bouquetCut",0,0,112,"0 0 240 300","prop");bouquet.style.display="none";
+
+function sortDepth(){
+  [...world.querySelectorAll(".prop,.actor")].sort((a,b)=>(+a.dataset.z||0)-(+b.dataset.z||0)).forEach(n=>world.appendChild(n));
+}
+function updateActorVisual(name,t,moving=false){
+  const p=pos[name], actor=actors[name];
+  const bob=moving?Math.abs(Math.sin(t*9))*0.07:Math.sin(t*2.1+name.length)*.018;
+  const tilt=moving?Math.sin(t*9)*.045:Math.sin(t*2+name.length)*.012;
+  setWorld(actor,p.x,p.z,bob,p.flip,tilt,1);
+}
+function face(){
+  if(!player||!partner)return;
+  pos[player].flip=pos[partner].x<pos[player].x;
+  pos[partner].flip=pos[player].x<pos[partner].x;
+}
+function dist(){return Math.hypot(pos[player].x-pos[partner].x,pos[player].z-pos[partner].z)}
+function setPrompt(txt,pop=false){prompt.textContent=txt;if(pop){prompt.classList.add("pop");setTimeout(()=>prompt.classList.remove("pop"),180)}}
+function setQuest(active){
+  const order={approach:0,flowers:1,kiss:2};
+  quest.querySelectorAll(".q").forEach(q=>{q.className="q";const k=q.dataset.q;if(order[k]<order[active])q.classList.add("done");else if(k===active)q.classList.add("on")});
+}
+function start(name){
+  stageState.chosen=name;stageState.kisses=0;stageState.mode="approach";stageState.eventT=0;stageState.dedication=$("#dedication").value.trim()||"Para vos, con todo mi amor 💗";
+  player=name;partner=name==="Bubu"?"Dudu":"Bubu";
+  Object.assign(pos[player],{x:-.8,z:4.8,flip:false});Object.assign(pos[partner],{x:1.0,z:-5.7,flip:true});
+  actors[player].classList.add("active");actors[partner].classList.remove("active");
+  bouquet.style.display="none";menu.style.display="none";hud.style.display="block";quest.style.display="flex";prompt.style.display="block";
+  setQuest("approach");setPrompt(`Acercate a ${partner} 💕`);startMusic();sortDepth();
+}
+$("#chooseBubu").onclick=()=>start("Bubu");$("#chooseDudu").onclick=()=>start("Dudu");
+
+function reset(){ if(!stageState.chosen){menu.style.display="flex";return} start(stageState.chosen) }
+function menuBack(){stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";bouquet.style.display="none";actors.Bubu.classList.remove("active");actors.Dudu.classList.remove("active");Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
+
+function hearts(n=18){
+  const p=projectScreen((pos[player].x+pos[partner].x)/2,(pos[player].z+pos[partner].z)/2,2.1);
+  for(let i=0;i<n;i++){const h=el("div","heart");h.style.left=p.x+"px";h.style.top=p.y+"px";h.style.setProperty("--x",`${(Math.random()-.5)*240}px`);h.style.setProperty("--y",`${-80-Math.random()*210}px`);h.style.setProperty("--r",`${(Math.random()-.5)*80}deg`);h.style.setProperty("--s",`${.55+Math.random()*.85}`);h.style.setProperty("--d",`${1+Math.random()*.7}s`);fx.appendChild(h);setTimeout(()=>h.remove(),1900)}
+}
+function petals(){
+  const p=el("div","petal");p.style.left=Math.random()*innerWidth+"px";p.style.top="-20px";p.style.setProperty("--x",`${(Math.random()-.5)*180}px`);p.style.setProperty("--d",`${4+Math.random()*3}s`);fx.appendChild(p);setTimeout(()=>p.remove(),7500)
+}
+function projectScreen(x,z,y=0){
+  // matches the stage perspective closely enough for UI particles
+  const originY=innerHeight*.72, k=.72+(z+8.5)/18*.38;
+  return {x:innerWidth/2+x*U*k,y:originY+z*U*.43-y*U*k};
+}
+function cinematicFallback(type){
+  actionFallback.textContent="";
+  const pair=el("div","fallbackPair"+(type==="kiss"?" kissing":""));
+  const a=useSvg(player==="Bubu"?"bubuPanda":"duduBear");
+  const b=useSvg(partner==="Bubu"?"bubuPanda":"duduBear");
+  if(type==="flowers"){
+    const q=useSvg("bouquetCut","0 0 240 300");q.classList.add("miniBouquet");pair.append(a,b,q);
+  }else{
+    pair.append(a,b);const h=el("div","fallbackHeart");h.textContent="💗";pair.appendChild(h);
+  }
+  actionFallback.appendChild(pair);
+}
+function cinematicShow(type,label,ms){
+  cinematicFallback(type);photoLabel.textContent=label;
+  actionFallback.style.display="flex";actionImg.style.display="block";actionImg.style.opacity="0";
+  const canUseRemote=type!=="flowers" || player==="Dudu";
+  if(canUseRemote){
+    actionImg.onload=()=>{actionImg.style.opacity="1";actionFallback.style.display="none"};
+    actionImg.onerror=()=>{actionImg.style.display="none";actionFallback.style.display="flex"};
+    actionImg.src=refs[type];
+  }else{
+    actionImg.removeAttribute("src");actionImg.style.display="none";
+  }
+  cinematic.classList.add("show");setTimeout(()=>cinematic.classList.remove("show"),ms);
+}
+function giveFlowers(){
+  if(stageState.mode!=="approach"||!player||dist()>2.35)return;
+  stageState.mode="flowers";stageState.eventT=0;face();setQuest("flowers");setPrompt("Entregando el ramo… 🌷",true);bouquet.style.display="block";hearts(10);flowerChime();
+}
+function kiss(){
+  if(!player||!["ready","done"].includes(stageState.mode)||dist()>1.9)return;
+  stageState.mode="kiss";stageState.eventT=0;stageState.kisses++;face();setQuest("kiss");setPrompt("💋 ¡Mwah!",true);hearts(30);kissChime();
+  cinematicShow("kiss",stageState.kisses===1?"Primer beso 💗":`${stageState.kisses} besos 💗`,900);
+  toast.textContent=stageState.kisses===1?"💗 PRIMER BESO 💗":`💗 ${stageState.kisses} BESOS 💗`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),900);
+}
+
+/* audio */
+let ac=null,musicTimer=null,note=0;const melody=[523.25,659.25,783.99,659.25,587.33,698.46,783.99,880,783.99,659.25,587.33,523.25];
+function audio(){try{ac||=new (AudioContext||webkitAudioContext)();ac.resume?.();return ac}catch{return null}}
+function tone(f,d=.18,v=.025,delay=0,type="sine"){if(!stageState.music)return;const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+delay;o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.03)}
+function startMusic(){audio();if(musicTimer)return;musicTimer=setInterval(()=>{if(!stageState.music||stageState.mode==="menu")return;const n=melody[note++%melody.length];tone(n,.3,.012);tone(n/2,.38,.006,.02,"triangle")},440)}
+function flowerChime(){tone(659,.17,.045);tone(784,.2,.042,.1);tone(988,.3,.038,.2)}
+function kissChime(){tone(784,.14,.045);tone(1047,.18,.04,.08);tone(1319,.25,.035,.16)}
+$("#music").onclick=()=>{stageState.music=!stageState.music;$("#music").textContent=`♫ Música: ${stageState.music?"sí":"no"}`;if(stageState.music){audio();startMusic()}};
+
+/* input */
+addEventListener("keydown",e=>{
+  const k=e.key.toLowerCase();if(["arrowup","arrowdown","arrowleft","arrowright"," ","e","r","escape"].includes(k))e.preventDefault();
+  if(k==="escape"){menuBack();return} if(k==="r"){reset();return}
+  key.add(k);if(e.repeat)return;if(k==="e")giveFlowers();if(k===" ")kiss()
+},{passive:false});
+addEventListener("keyup",e=>key.delete(e.key.toLowerCase()));
+document.querySelectorAll("[data-key]").forEach(b=>{const k=b.dataset.key;const d=e=>{e.preventDefault();key.add(k)},u=e=>{e.preventDefault();key.delete(k)};b.onpointerdown=d;b.onpointerup=u;b.onpointercancel=u;b.onpointerleave=u});
+document.querySelector('[data-action="flowers"]').onclick=giveFlowers;document.querySelector('[data-action="kiss"]').onclick=kiss;
+
+let last=performance.now(),petalT=0;
+function update(dt,t){
+  petalT+=dt;if(petalT>.23){petalT=0;if(stageState.mode!=="menu"&&Math.random()<.4)petals()}
+  if(!player)return;
+  stageState.eventT+=dt;
+  const locked=["flowers","kiss"].includes(stageState.mode);
+  let dx=0,dz=0,moving=false;
+  if(!locked){
+    dx=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0);
+    dz=(key.has("s")||key.has("arrowdown")?1:0)-(key.has("w")||key.has("arrowup")?1:0);
+    const l=Math.hypot(dx,dz);if(l){dx/=l;dz/=l;moving=true}
+    pos[player].x=Math.max(-X_LIMIT,Math.min(X_LIMIT,pos[player].x+dx*3.7*dt));
+    pos[player].z=Math.max(Z_MIN,Math.min(Z_MAX,pos[player].z+dz*3.7*dt));
+    if(Math.abs(dx)>.05)pos[player].flip=dx<0;
+  }
+  updateActorVisual("Bubu",t,moving&&player==="Bubu");updateActorVisual("Dudu",t,moving&&player==="Dudu");
+
+  if(stageState.mode==="approach"){
+    if(dist()<2.35){face();setPrompt("Presioná E para darle las flores 🌷")}else setPrompt(`Acercate a ${partner} · ${dist().toFixed(1)} m 💕`);
+  }
+  if(stageState.mode==="flowers"){
+    face();const a=Math.min(1,stageState.eventT/1.35),s=a*a*(3-2*a);
+    const x=(1-s)*pos[player].x+s*pos[partner].x,z=(1-s)*pos[player].z+s*pos[partner].z,y=.8+Math.sin(a*Math.PI)*.8;
+    setWorld(bouquet,x,z,y,false,-.08+Math.sin(a*Math.PI)*.16,1);
+    if(stageState.eventT>1.42){
+      stageState.mode="ready";stageState.eventT=0;setQuest("kiss");
+      cinematicShow("flowers","Un ramito para vos 🌷",1150);
+      setPrompt("Ahora acercate un poquito y presioná Espacio 💋",true);
+    }
+  }
+  if(stageState.mode==="ready"||stageState.mode==="done"){
+    face();
+    const bx=pos[partner].x+(pos[partner].flip?-.55:.55),bz=pos[partner].z-.08;setWorld(bouquet,bx,bz,.75,pos[partner].flip,-.16,0.76);
+    if(dist()<1.9)setPrompt(stageState.mode==="done"?"Espacio = otro beso 💋":"Presioná Espacio para besar 💋");
+    else setPrompt(`Acercate un poquito más · ${dist().toFixed(1)} m`);
+  }
+  if(stageState.mode==="kiss"){
+    face();let vx=pos[partner].x-pos[player].x,vz=pos[partner].z-pos[player].z,l=Math.hypot(vx,vz)||1;vx/=l;vz/=l;
+    const mx=(pos[player].x+pos[partner].x)/2,mz=(pos[player].z+pos[partner].z)/2,q=Math.min(1,dt*5);
+    pos[player].x+=(mx-vx*.72-pos[player].x)*q;pos[player].z+=(mz-vz*.72-pos[player].z)*q;
+    pos[partner].x+=(mx+vx*.72-pos[partner].x)*q;pos[partner].z+=(mz+vz*.72-pos[partner].z)*q;
+    if(stageState.eventT>.92){stageState.mode="done";stageState.eventT=0;setPrompt(`${stageState.dedication} · ${stageState.kisses} ${stageState.kisses===1?"beso":"besos"} 💗`,true)}
+  }
+  sortDepth();
+  hud.innerHTML=`<strong>${stageState.chosen}</strong> · ${stageState.dedication}<br>WASD/flechas · E flores · Espacio beso<br>Besos: <strong>${stageState.kisses}</strong> 💋`;
+}
+function loop(now){const dt=Math.min(.033,(now-last)/1000);last=now;update(dt,now/1000);requestAnimationFrame(loop)}
+window.__BUBU_DUDU_PAPER_DATE__={start,reset,menu:menuBack,giveFlowers,kiss,state:stageState,debugNear(){if(player&&partner){pos[player].x=pos[partner].x-1.55;pos[player].z=pos[partner].z+.18;face();}}};
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

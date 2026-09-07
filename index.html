@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bubu & Dudu — Paper Date</title>
+<link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+<div id="app">
+  <div id="sky">
+    <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div>
+    <div id="hillBack"></div><div id="hillFront"></div><div class="paper-specks"></div>
+  </div>
+
+  <svg id="defs" aria-hidden="true">
+    <defs>
+      <filter id="grain"><feTurbulence baseFrequency=".9" numOctaves="2" seed="7" type="fractalNoise" result="n"/><feComposite in="n" in2="SourceGraphic" operator="in" result="t"/><feBlend in="SourceGraphic" in2="t" mode="multiply"/></filter>
+    </defs>
+    <symbol id="bubuPanda" viewBox="0 0 260 300">
+      <g stroke="#503329" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M83 191 Q64 215 70 254 Q73 278 105 276 L156 276 Q188 278 191 255 Q197 216 177 191" fill="#fffdf9"/>
+        <path d="M85 259 Q68 251 65 269 Q64 282 90 281 L102 277 M175 259 Q192 251 195 269 Q196 282 170 281 L158 277" fill="#492d27"/>
+        <circle cx="58" cy="67" r="23" fill="#492d27"/><circle cx="202" cy="67" r="23" fill="#492d27"/>
+        
+        <path d="M130 43 C75 40 40 64 35 115 C30 150 30 175 52 191 C69 205 105 207 130 207 C162 207 194 205 212 189 C229 175 228 146 224 117 C219 67 186 42 130 43Z" fill="#fffdf9"/>
+        <g class="eyes" fill="#503329" stroke="none"><circle cx="91" cy="154" r="8"/><circle cx="168" cy="154" r="8"/></g>
+        <g fill="#f4b0ae" stroke="none"><ellipse cx="65" cy="176" rx="18" ry="16"/><ellipse cx="195" cy="176" rx="18" ry="16"/></g>
+        <path d="M119 162 Q123 170 130 163 Q137 170 141 162" fill="none" stroke-width="3.5"/>
+        <path d="M114 208 L115 220 Q119 229 130 217 Q141 229 145 220 L146 208" fill="#492d27" stroke="none"/>
+        <path d="M83 219 Q109 222 103 236 Q100 244 80 239 M178 219 Q155 222 160 236 Q164 244 181 239" fill="#fffdf9"/>
+      </g>
+    </symbol>
+    <symbol id="duduBear" viewBox="0 0 260 300">
+      <g stroke="#503329" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M83 191 Q64 215 70 254 Q73 278 105 276 L156 276 Q188 278 191 255 Q197 216 177 191" fill="#d9a181"/>
+        <path d="M85 259 Q68 251 65 269 Q64 282 90 281 L102 277 M175 259 Q192 251 195 269 Q196 282 170 281 L158 277" fill="#d9a181"/>
+        <circle cx="58" cy="67" r="23" fill="#d9a181"/><circle cx="202" cy="67" r="23" fill="#d9a181"/>
+        <circle cx="58" cy="67" r="12" fill="#694331" stroke="none"/><circle cx="202" cy="67" r="12" fill="#694331" stroke="none"/>
+        <path d="M130 43 C75 40 40 64 35 115 C30 150 30 175 52 191 C69 205 105 207 130 207 C162 207 194 205 212 189 C229 175 228 146 224 117 C219 67 186 42 130 43Z" fill="#d9a181"/>
+        <g class="eyes" fill="#503329" stroke="none"><circle cx="91" cy="154" r="8"/><circle cx="168" cy="154" r="8"/></g>
+        <g fill="#f5ca80" stroke="none"><ellipse cx="65" cy="176" rx="18" ry="16"/><ellipse cx="195" cy="176" rx="18" ry="16"/></g>
+        <path d="M119 162 Q123 170 130 163 Q137 170 141 162" fill="none" stroke-width="3.5"/>
+        
+        <path d="M83 219 Q109 222 103 236 Q100 244 80 239 M178 219 Q155 222 160 236 Q164 244 181 239" fill="#d9a181"/>
+      </g>
+    </symbol>
+    <symbol id="treeCut" viewBox="0 0 220 320">
+      <g stroke="#573743" stroke-width="8" stroke-linejoin="round">
+        <path d="M94 290l7-113h38l8 113z" fill="#9b6849"/>
+        <path d="M110 35c35-18 71 4 69 40 29-2 45 28 32 51 20 20 9 54-18 61-5 31-42 42-65 24-28 25-69 8-70-25-30-5-42-39-21-61-13-29 7-59 39-58 3-20 15-32 34-32z" fill="#5d9c55"/>
+        <path d="M70 91q44-31 93-10M72 145q52-27 105 0" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="5"/>
+      </g>
+    </symbol>
+    <symbol id="blossomCut" viewBox="0 0 220 320">
+      <g stroke="#573743" stroke-width="8" stroke-linejoin="round">
+        <path d="M94 290l7-113h38l8 113z" fill="#9b6849"/>
+        <path d="M110 35c35-18 71 4 69 40 29-2 45 28 32 51 20 20 9 54-18 61-5 31-42 42-65 24-28 25-69 8-70-25-30-5-42-39-21-61-13-29 7-59 39-58 3-20 15-32 34-32z" fill="#dba3a1"/>
+        <path d="M70 91q44-31 93-10M72 145q52-27 105 0" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="5"/>
+      </g>
+    </symbol>
+    <symbol id="bushCut" viewBox="0 0 220 130">
+      <g stroke="#573743" stroke-width="7"><path d="M24 111c-22-27 2-57 30-49 0-31 37-46 57-23 20-26 61-14 62 20 31-8 51 25 31 52z" fill="#65a75d"/></g>
+      <circle cx="66" cy="76" r="8" fill="#f4a1bc"/><circle cx="141" cy="60" r="8" fill="#ffd96d"/><circle cx="170" cy="89" r="7" fill="#fff6e9"/>
+    </symbol>
+    <symbol id="fenceCut" viewBox="0 0 420 120">
+      <g fill="#b9805c" stroke="#573743" stroke-width="6" stroke-linejoin="round">
+        <path d="M22 110V28l18-19 18 19v82M113 110V28l18-19 18 19v82M204 110V28l18-19 18 19v82M295 110V28l18-19 18 19v82M386 110V28l18-19 18 19v82"/>
+        <path d="M15 53h396v24H15z"/>
+      </g>
+    </symbol>
+    <symbol id="archCut" viewBox="0 0 500 520">
+      <g stroke="#573743" stroke-width="10" stroke-linejoin="round">
+        <path d="M75 505V236C75 84 425 84 425 236v269h-46V239c0-105-258-105-258 0v266z" fill="#f4e7db"/>
+        <path d="M130 420h240v32H130zM155 451h25v54h-25zM320 451h25v54h-25z" fill="#a67050"/>
+      </g>
+      <g stroke="#573743" stroke-width="5">
+        <circle cx="101" cy="196" r="22" fill="#ef789e"/><circle cx="160" cy="124" r="22" fill="#f4a2bd"/><circle cx="250" cy="88" r="25" fill="#ed789e"/><circle cx="340" cy="124" r="22" fill="#f4a2bd"/><circle cx="399" cy="196" r="22" fill="#ef789e"/>
+      </g>
+      <g fill="#ffd66b"><circle cx="101" cy="196" r="8"/><circle cx="160" cy="124" r="8"/><circle cx="250" cy="88" r="9"/><circle cx="340" cy="124" r="8"/><circle cx="399" cy="196" r="8"/></g>
+    </symbol>
+    <symbol id="bouquetCut" viewBox="0 0 240 300">
+      <g stroke="#573743" stroke-linecap="round">
+        <path d="M120 255L70 96M120 255L91 70M120 255L119 58M120 255L150 70M120 255L174 98" stroke="#4e9254" stroke-width="8"/>
+        <path d="M51 121h138l-41 139H94z" fill="#f5d9e2" stroke-width="8" stroke-linejoin="round"/>
+        <path d="M87 203h68" stroke="#d75e8d" stroke-width="15"/>
+        <g fill="#ef719a" stroke-width="5"><circle cx="68" cy="89" r="26"/><circle cx="104" cy="65" r="27"/><circle cx="139" cy="61" r="27"/><circle cx="175" cy="91" r="26"/><circle cx="118" cy="104" r="27"/></g>
+        <g fill="#ffd66c" stroke="none"><circle cx="68" cy="89" r="8"/><circle cx="104" cy="65" r="8"/><circle cx="139" cy="61" r="8"/><circle cx="175" cy="91" r="8"/><circle cx="118" cy="104" r="8"/></g>
+      </g>
+    </symbol>
+    <symbol id="signCut" viewBox="0 0 260 190">
+      <g stroke="#573743" stroke-width="7" stroke-linejoin="round"><path d="M38 21h184v106H38z" fill="#fff8ef"/><path d="M112 127h36v60h-36z" fill="#a87351"/></g>
+      <path d="M130 55c-18-19-42 5 0 37 42-32 18-56 0-37z" fill="#ed7197"/>
+      <text x="130" y="115" text-anchor="middle" font-family="Trebuchet MS" font-size="22" font-weight="900" fill="#573743">B + D</text>
+    </symbol>
+
+<symbol id="tulipsCut" viewBox="0 0 150 160">
+ <g stroke="#5a5138" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M36 146V74 M77 146V52 M119 146V83" fill="none"/>
+ <path d="M36 124Q9 123 11 98Q36 99 36 124 M77 114Q101 112 104 87Q78 88 77 114 M119 137Q92 132 92 112Q117 113 119 137" fill="#8ba466"/>
+ <path d="M16 47L29 57L37 39L45 57L59 47V68Q39 99 18 68Z" fill="#e39e9e"/>
+ <path d="M56 27L70 37L78 19L86 37L99 27V48Q79 79 58 48Z" fill="#edc772"/>
+ <path d="M98 57L111 67L119 49L127 67L140 57V78Q120 109 100 78Z" fill="#c87785"/>
+ </g></symbol>
+<symbol id="buntingCut" viewBox="0 0 560 130">
+ <path d="M5 7Q280 135 555 7" fill="none" stroke="#806449" stroke-width="4"/>
+ <g stroke="#806449" stroke-width="2"><path d="M48 27L78 89L103 46Z" fill="#db969b"/><path d="M134 57L165 115L190 69Z" fill="#e6c677"/><path d="M222 74L253 129L277 78Z" fill="#9eb184"/><path d="M310 78L343 124L365 70Z" fill="#db969b"/><path d="M397 62L433 109L451 43Z" fill="#e6c677"/><path d="M480 33L523 79L536 15Z" fill="#9eb184"/></g>
+</symbol>
+<symbol id="butterflyCut" viewBox="0 0 90 80"><g stroke="#76543d" stroke-width="3" stroke-linejoin="round"><path d="M44 42C6-14 0 43 30 49C4 72 39 84 44 51C53 83 86 68 60 49C88 36 77-9 44 42Z" fill="#f6d182"/><path d="M44 34V58M44 37L35 23M44 37L55 23" fill="none"/></g></symbol>
+  </svg>
+
+  <div id="viewport"><canvas id="scene3d" tabindex="0" aria-label="Jardín 3D. Flechas para caminar; arrastrá para girar la cámara."></canvas></div>
+  <div id="renderStatus" role="status">Preparando el jardín…</div>
+  <div id="fx"></div>
+
+  <div id="ui"><div id="cameraControls"><button id="cameraLeft" type="button" aria-label="Girar cámara a la izquierda">↶</button><span>CÁMARA</span><button id="cameraRight" type="button" aria-label="Girar cámara a la derecha">↷</button></div><div id="chapter">CAPÍTULO 01<b>El jardín de los encuentros</b></div><button id="travel" type="button">Seguir el caminito →</button><button id="menuButton" class="paperUI" type="button">↶ Volver al inicio</button>
+    <div id="hud" class="paperUI"></div>
+    <div id="quest" class="paperUI"><span class="q" data-q="approach">1 · ACERCATE</span><span class="q" data-q="flowers">2 · FLORES</span><span class="q" data-q="kiss">3 · BESO</span></div>
+    <button id="prompt" type="button" aria-live="polite" class="paperUI"></button>
+    <button id="music" class="paperUI" type="button">♫ Música: sí</button>
+    <div id="toast" class="paperUI">💗</div>
+    
+  </div>
+
+  <div id="mobile">
+    <div class="dpad">
+      <button class="up" data-key="arrowup">▲</button><button class="left" data-key="arrowleft">◀</button>
+      <button class="down" data-key="arrowdown">▼</button><button class="right" data-key="arrowright">▶</button>
+    </div>
+    <div class="acts"><button data-action="flowers">🌷<br>FLORES</button><button data-action="kiss">💋<br>BESO</button></div>
+  </div>
+
+  <div id="menu">
+    <div id="menuCard" class="paperUI">
+      <div class="menuInner">
+        <div class="eyebrow">UNA PEQUEÑA HISTORIA DE AMOR</div><h1>Bubu &amp; Dudu</h1><div class="subtitle">Un jardín para dos</div>
+        <div class="tag">Un ramito, un paseo y ese beso que lo dice todo.<br>Hoy, la historia la escriben ustedes.</div>
+        <input id="dedication" maxlength="90" value="Para vos, con todo mi amor 💗" aria-label="Dedicatoria">
+        <div class="chooseLabel">ELEGÍ A QUIÉN CONTROLAR</div>
+        <div class="choices">
+          <button id="chooseBubu" disabled class="choose" type="button">
+            <svg viewBox="0 0 260 300"><use href="#bubuPanda"></use></svg>
+            <strong>Bubu</strong><small>un poquito de travesura</small><span class="startHint">JUGAR CONMIGO →</span>
+          </button>
+          <button id="chooseDudu" disabled class="choose" type="button">
+            <svg viewBox="0 0 260 300"><use href="#duduBear"></use></svg>
+            <strong>Dudu</strong><small>un abrazo calentito</small><span class="startHint">JUGAR CONMIGO →</span>
+          </button>
+        </div>
+        <div class="credit">Personajes de 黄小B · una carta de amor hecha de papel</div><div class="tips">Arrastrá el jardín para girar la cámara · <kbd>WASD</kbd> o <kbd>↑↓←→</kbd> caminar · <kbd>E</kbd> flores · <kbd>Espacio</kbd> beso · <kbd>R</kbd> reiniciar · <kbd>Esc</kbd> menú</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="src/characters.js"></script>
+<script src="src/animation.js"></script>
+<script src="src/world.js"></script>
+<script src="src/engine.js"></script>
+<script src="src/game.js"></script>
+</body>
+</html>
