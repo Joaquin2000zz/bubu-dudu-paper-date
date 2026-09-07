@@ -349,7 +349,7 @@ button:focus-visible{outline:3px solid #b66176;outline-offset:5px}
       <div class="menuInner">
         <div class="eyebrow">UNA PEQUEÑA HISTORIA DE AMOR</div><h1>Bubu &amp; Dudu</h1><div class="subtitle">Un jardín para dos</div>
         <div class="tag">Un ramito, un paseo y ese beso que lo dice todo.<br>Hoy, la historia la escriben ustedes.</div>
-        <input id="dedication" maxlength="90" value="Para vos, con todo mi amor 💗" aria-label="Dedicatoria">
+        <input id="dedication" maxlength="90" value="Para Bettina, con todo mi amor 💗" aria-label="Dedicatoria">
         <div class="chooseLabel">ELEGÍ A QUIÉN CONTROLAR</div>
         <div class="choices">
           <button id="chooseBubu" disabled class="choose" type="button">
@@ -663,7 +663,7 @@ function setQuest(active){
 function start(name){
   if(!rendererReady)return;
   key.clear();autoWalk=false;document.body.classList.add("playing");$("#travel").style.display="block";document.activeElement?.blur();
-  stageState.chosen=name;stageState.kisses=0;stageState.mode="approach";stageState.eventT=0;stageState.dedication=$("#dedication").value.trim()||"Para vos, con todo mi amor 💗";
+  stageState.chosen=name;stageState.kisses=0;stageState.mode="approach";stageState.eventT=0;stageState.dedication=$("#dedication").value.trim()||"Para Bettina, con todo mi amor 💗";
   player=name;partner=name==="Bubu"?"Dudu":"Bubu";
   Object.assign(pos[player],{x:-.8,z:3.0,flip:false});Object.assign(pos[partner],{x:1.0,z:-5.7,flip:true});
   for(const p of Object.values(pos)){p.moving=false;p.walkTime=0;p.turnT=0;}

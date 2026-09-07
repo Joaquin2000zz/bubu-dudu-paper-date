@@ -42,7 +42,7 @@ function setQuest(active){
 function start(name){
   if(!rendererReady)return;
   key.clear();autoWalk=false;document.body.classList.add("playing");$("#travel").style.display="block";document.activeElement?.blur();
-  stageState.chosen=name;stageState.kisses=0;stageState.mode="approach";stageState.eventT=0;stageState.dedication=$("#dedication").value.trim()||"Para vos, con todo mi amor 💗";
+  stageState.chosen=name;stageState.kisses=0;stageState.mode="approach";stageState.eventT=0;stageState.dedication=$("#dedication").value.trim()||"Para Bettina, con todo mi amor 💗";
   player=name;partner=name==="Bubu"?"Dudu":"Bubu";
   Object.assign(pos[player],{x:-.8,z:3.0,flip:false});Object.assign(pos[partner],{x:1.0,z:-5.7,flip:true});
   for(const p of Object.values(pos)){p.moving=false;p.walkTime=0;p.turnT=0;}
