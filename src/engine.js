@@ -62,7 +62,18 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
   // Paving flecks and paper tufts, deterministic between loads.
   let seed=42;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
   for(let i=0;i<180;i++){const x=rand()*18-9,z=rand()*19-9.5;if(Math.abs(x)<1.7||z<-5.4||((x+5)**2/10+z*z/6<1))continue;disk(geometry,x,.041,z,.04+rand()*.08,.05,color(i%4===0?'#ecd89a':'#bfd092'),5);}
-  const scene=makeBuffer(geometry);
+  const gardenScene=makeBuffer(geometry);
+  // The first two chapters use raised paper platforms. They share the same
+  // 3D camera and billboard actors as the garden, but have their own geometry.
+  const levelScenes=new Map();
+  for(const id of [1,2]){
+    const levelGeometry=[];const chapter=PaperWorld.level(id);
+    for(const f of chapter.floors)box(levelGeometry,f.x,f.y,f.z,f.w,f.h,f.d,f.color);
+    for(const o of chapter.obstacles)box(levelGeometry,o.x,o.y,o.z,o.w,o.h,o.d,o.color);
+    for(const h of chapter.hazards){box(levelGeometry,h.x,.03,h.z,h.w,.10,h.d,'#c96d7f');box(levelGeometry,h.x,.14,h.z,h.w*.72,.05,h.d*.72,'#f1b2a7');}
+    const g=chapter.goal;box(levelGeometry,g.x,.03,g.z,2.5,.13,2.5,'#e7c895');
+    levelScenes.set(id,makeBuffer(levelGeometry));
+  }
 
   const textures=new Map(), jobs=[];
   function svgTexture(key,body,view='0 0 260 300',outline=true){
@@ -72,7 +83,7 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
     const source=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${view}">${filter}<g ${outline?'filter="url(#edge)"':''}>${body}</g></svg>`;
     jobs.push(new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>{gl.bindTexture(gl.TEXTURE_2D,tex);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);resolve();};image.onerror=()=>reject(Error('No se pudo cargar el dibujo '+key));image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(source);}));
   }
-  for(const id of ['treeCut','blossomCut','bushCut','tulipsCut','buntingCut','butterflyCut','bouquetCut','signCut']){const symbol=symbols.querySelector('#'+id);svgTexture(id,symbol.innerHTML,symbol.getAttribute('viewBox'));}
+  for(const id of ['treeCut','blossomCut','bushCut','tulipsCut','buntingCut','butterflyCut','bouquetCut','signCut','hostileCut']){const symbol=symbols.querySelector('#'+id);svgTexture(id,symbol.innerHTML,symbol.getAttribute('viewBox'));}
 
   // Distinct front/profile/back drawings, not a mirrored front. Limb positions are
   // authored per frame; the identity palette and facial proportions remain fixed.
@@ -116,25 +127,35 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
     const distance=(width<600?19:21)*cameraZoom,vertical=distance*.32;
     const eye=[focus[0]+Math.sin(yaw)*distance,focus[1]+vertical,focus[2]+Math.cos(yaw)*distance];
     vp=multiply(perspective(Math.PI/4.7,width/height,.1,120),lookAt(eye,focus));gl.uniformMatrix4fv(locations.vp,false,vp);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    const level=state.level||3,scene=level===3?gardenScene:(levelScenes.get(level)||gardenScene);
     drawBuffer(scene);
     // Contact shadows remain on the geometry, independent of sprite orientation.
-    const shadow=[];for(const name of ['Bubu','Dudu']){const p=positions[name];disk(shadow,p.x,heightAt(p.x,p.z)+.012,p.z,.70,.30,color('#574532',1,.23));}
+    const actorNames=level===3?['Bubu','Dudu']:(player?[player]:[]);
+    const shadow=[];for(const name of actorNames){const p=positions[name];disk(shadow,p.x,heightAt(p.x,p.z)+.012,p.z,.70,.30,color('#574532',1,.23));}
     gl.depthMask(false);draw(shadow);gl.depthMask(true);
-    for(const o of decorations)billboard(textures.get(o.id),o.x,o.y,o.z,o.w,o.h,false,0);
-    billboard(textures.get('butterflyCut'),-3,1.8+(reducedMotion?0:Math.sin(t*2)*.25),1,.6,.53,false,yaw,reducedMotion?0:Math.sin(t*4)*.12);
+    if(level===3){for(const o of decorations)billboard(textures.get(o.id),o.x,o.y,o.z,o.w,o.h,false,0);billboard(textures.get('butterflyCut'),-3,1.8+(reducedMotion?0:Math.sin(t*2)*.25),1,.6,.53,false,yaw,reducedMotion?0:Math.sin(t*4)*.12);}
+    else {
+      const chapter=PaperWorld.level(level),goal=chapter.goal;
+      billboard(textures.get('signCut'),goal.x,1.05,goal.z,1.45,1.05,false,yaw);
+      for(const m of (state.mobs||[])){const bob=reducedMotion?0:Math.sin(t*5+m.phase)*.07;billboard(textures.get('hostileCut'),m.x,heightAt(m.x,m.z)+.06+bob,m.z,.92,.86,m.flip,yaw);}
+      for(const flower of chapter.flowers)if(!(state.collected||[]).includes(flower.id))billboard(textures.get('bouquetCut'),flower.x,heightAt(flower.x,flower.z)+.08,flower.z,.62,.82,false,yaw,-.08);
+    }
     stats={};
-    for(const name of ['Bubu','Dudu']){
+    for(const name of actorNames){
       const p=positions[name];
       const {view,flip,action,frame,key}=PaperAnimation.pose(name,p,positions,state,player,partner,yaw);
       const texture=textures.get(key),bounce=reducedMotion?0:p.moving?Math.abs(Math.sin((p.walkTime||0)*11*Math.PI/4))*.075:Math.sin(t*2)*.018;
       const turn=p.turnT>0?Math.max(.15,Math.abs(Math.cos(p.turnT/.18*Math.PI))):1;
-      billboard(texture,p.x,heightAt(p.x,p.z)+bounce-.10,p.z,2.35,2.72,flip,yaw,0,turn);
+      billboard(texture,p.x,heightAt(p.x,p.z)+(p.jumpY||0)+bounce-.10,p.z,2.35,2.72,flip,yaw,0,turn);
       stats[name]={view,action,frame,flip,x:+p.x.toFixed(2),z:+p.z.toFixed(2)};
     }
     if(['flowers','ready','kiss','done'].includes(state.mode)&&player){
       const a=positions[player],b=positions[partner];let x=b.x+(a.x<b.x?-.61:.61),z=b.z+.13,y=heightAt(b.x,b.z)+.7;
       if(state.mode==='flowers'){const k=Math.min(1,state.eventT/2.0),smooth=k*k*(3-2*k);x=a.x+(b.x-a.x)*smooth;z=a.z+(b.z-a.z)*smooth+.13;y=heightAt(x,z)+.65+Math.sin(k*Math.PI)*.4;}
       billboard(textures.get('bouquetCut'),x,y,z,.86,1.08,false,yaw,-.1);
+    }
+    if(level===3&&state.flowers>state.gifted){
+      const spots=state.giftSpots||[];for(let i=state.gifted;i<Math.min(spots.length,state.flowers);i++){const spot=spots[i];billboard(textures.get('bouquetCut'),spot.x,heightAt(spot.x,spot.z)+.08,spot.z,.62,.82,false,yaw,-.08);}
     }
     if(state.mode==='kiss'&&player&&!reducedMotion){const a=positions[player],b=positions[partner];for(let i=0;i<5;i++){const k=(state.eventT*.75+i*.19)%1;billboard(textures.get('heart'),(a.x+b.x)/2+Math.sin(i*4)*k*.9,2.3+k*1.5,(a.z+b.z)/2,.28+k*.2,.28+k*.2,false,yaw);}}
     canvas.dataset.poses=JSON.stringify(stats);canvas.dataset.camera=yaw.toFixed(3);

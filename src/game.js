@@ -1,15 +1,15 @@
 
 (() => {
 "use strict";
-const $=s=>document.querySelector(s), fx=$("#fx"), hud=$("#hud"), prompt=$("#prompt"), quest=$("#quest"), menu=$("#menu"), toast=$("#toast");
+const $=s=>document.querySelector(s), fx=$("#fx"), hud=$("#hud"), prompt=$("#prompt"), quest=$("#quest"), menu=$("#menu"), toast=$("#toast"), chapter=$("#chapter");
 const U=58, X_LIMIT=8.5, Z_MIN=-8.5, Z_MAX=8.1;
-const stageState={mode:"menu",chosen:"",kisses:0,eventT:0,dedication:"",music:true};
+const stageState={mode:"menu",chosen:"",kisses:0,eventT:0,dedication:"",music:true,level:1,flowers:0,collected:[],gifted:0,giftSpots:[],mobs:[],hitCooldown:0};
 const key=new Set();
 let autoWalk=false;
 const reducedMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const pos={
-  Bubu:{x:-1.3,z:-5.8,flip:false,bob:0,heading:0,walkTime:0,turnT:0,moving:false},
-  Dudu:{x:1.3,z:-5.8,flip:true,bob:0,heading:0,walkTime:0,turnT:0,moving:false}
+  Bubu:{x:-1.3,z:-5.8,flip:false,bob:0,heading:0,walkTime:0,turnT:0,moving:false,jumpY:0,jumpV:0},
+  Dudu:{x:1.3,z:-5.8,flip:true,bob:0,heading:0,walkTime:0,turnT:0,moving:false,jumpY:0,jumpV:0}
 };
 let player=null, partner=null;
 // All character artwork is embedded: consistent online and offline.
@@ -39,21 +39,32 @@ function setQuest(active){
   const order={approach:0,flowers:1,kiss:2};
   quest.querySelectorAll(".q").forEach(q=>{q.className="q";const k=q.dataset.q;if(order[k]<order[active])q.classList.add("done");else if(k===active)q.classList.add("on")});
 }
+function currentChapter(){return PaperWorld.level(stageState.level)}
+function currentCollected(){const ids=currentChapter().flowers||[];return ids.filter(f=>stageState.collected.includes(f.id)).length}
+function updateChapterUi(){const c=currentChapter();chapter.innerHTML=`${c.chapter}<b>${c.name}</b>`;const count=stageState.level<3?`${currentCollected()}/3`:`${stageState.flowers-stageState.gifted}/${stageState.flowers}`;hud.innerHTML=`<strong>Nivel ${stageState.level}/3</strong> · Ramos: ${count}<br><strong>${stageState.chosen||"Bubu"}</strong> · ${escapeHtml(stageState.dedication||"Para Bettina, con todo mi amor 💗")}`}
+function resetActorState(p){p.moving=false;p.walkTime=0;p.turnT=0;p.heading=0;p.jumpY=0;p.jumpV=0}
+function loadLevel(levelNumber){
+  const c=PaperWorld.setLevel(levelNumber);stageState.level=levelNumber;stageState.eventT=0;stageState.hitCooldown=0;stageState.giftSpots=c.giftSpots||[];
+  stageState.mobs=(c.mobs||[]).map((m,i)=>({...m,baseX:m.x,baseZ:m.z,phase:i*.9,flip:false}));
+  const start=c.start;Object.assign(pos[player],{x:start.x,z:start.z,flip:false,heading:Math.PI});
+  Object.assign(pos[partner],{x:c.goal.x,z:c.goal.z,flip:true,heading:0});
+  for(const p of Object.values(pos))resetActorState(p);
+  pos[player].heading=Math.PI;pos[partner].heading=0;
+  updateChapterUi();
+  if(levelNumber===3){stageState.mode="approach";quest.innerHTML='<span class="q on" data-q="approach">1 · ACERCATE</span><span class="q" data-q="flowers">2 · FLORES</span><span class="q" data-q="kiss">3 · BESO</span>';quest.style.display="flex";setQuest("approach");setPrompt(stageState.flowers>stageState.gifted?`Acercate a ${partner} · elegí un ramo 🌷`:`Acercate a ${partner} · ya no quedan ramos`);$("#travel").style.display="block";$("#travel").textContent="Seguir el caminito →"}
+  else {stageState.mode="platform";quest.innerHTML=`<span class="q on">NIVEL ${levelNumber}/3</span><span class="q">RAMOS ${currentCollected()}/3</span><span class="q">META</span>`;quest.style.display="flex";setPrompt(`Nivel ${levelNumber}: juntá los 3 ramos y llegá a la bandera 🌷`);$("#travel").style.display="none";$("#travel").textContent=`Entrar al nivel ${levelNumber+1} →`}
+}
 function start(name){
   if(!rendererReady)return;
   key.clear();autoWalk=false;document.body.classList.add("playing");$("#travel").style.display="block";document.activeElement?.blur();
-  stageState.chosen=name;stageState.kisses=0;stageState.mode="approach";stageState.eventT=0;stageState.dedication=$("#dedication").value.trim()||"Para Bettina, con todo mi amor 💗";
+  stageState.chosen=name;stageState.kisses=0;stageState.flowers=0;stageState.collected=[];stageState.gifted=0;stageState.mode="platform";stageState.eventT=0;stageState.dedication=$("#dedication").value.trim()||"Para Bettina, con todo mi amor 💗";
   player=name;partner=name==="Bubu"?"Dudu":"Bubu";
-  Object.assign(pos[player],{x:-.8,z:3.0,flip:false});Object.assign(pos[partner],{x:1.0,z:-5.7,flip:true});
-  for(const p of Object.values(pos)){p.moving=false;p.walkTime=0;p.turnT=0;}
-  pos[player].heading=Math.PI;pos[partner].heading=0;
-  menu.style.display="none";hud.style.display="block";quest.style.display="flex";prompt.style.display="block";
-  setQuest("approach");setPrompt(`Acercate a ${partner} 💕`);startMusic();
+  loadLevel(1);menu.style.display="none";hud.style.display="block";quest.style.display="flex";prompt.style.display="block";startMusic();
 }
 $("#chooseBubu").onclick=()=>start("Bubu");$("#chooseDudu").onclick=()=>start("Dudu");
 
 function reset(){ if(!stageState.chosen){menu.style.display="flex";return} start(stageState.chosen) }
-function menuBack(){key.clear();autoWalk=false;document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(p=>{p.moving=false;p.heading=0;p.turnT=0;});Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
+function menuBack(){key.clear();autoWalk=false;PaperWorld.setLevel(3);document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
 
 function hearts(n=18){
   if(reducedMotion)return;
@@ -66,8 +77,9 @@ function petals(){
 }
 function projectScreen(x,z,y=0){return engine?engine.project(x,y,z):{x:innerWidth/2,y:innerHeight/2};}
 function giveFlowers(){
-  if(stageState.mode!=="approach"||!player||dist()>2.35)return;
-  stageState.mode="flowers";stageState.eventT=0;face();setQuest("flowers");setPrompt("Entregando el ramo… 🌷",true);hearts(10);flowerChime();
+  if(stageState.level!==3||!player||dist()>2.35||!["approach","ready","done"].includes(stageState.mode))return;
+  if(stageState.flowers<=stageState.gifted){setPrompt("Primero juntá ramos en los niveles anteriores 🌷",true);return}
+  stageState.gifted++;stageState.mode="flowers";stageState.eventT=0;face();setQuest("flowers");setPrompt("Entregando el ramo… 🌷",true);hearts(10);flowerChime();
 }
 function kiss(){
   if(!player||!["ready","done"].includes(stageState.mode)||dist()>1.9)return;
@@ -88,11 +100,11 @@ $("#music").onclick=()=>{stageState.music=!stageState.music;$("#music").textCont
 /* input */
 addEventListener("keydown",e=>{
   if(e.target.matches?.("input,textarea,[contenteditable=true]"))return;
-  const k=e.key.toLowerCase();if(["arrowup","arrowdown","arrowleft","arrowright"," ","e","r","escape"].includes(k))e.preventDefault();
+  const k=e.key.toLowerCase();if(["arrowup","arrowdown","arrowleft","arrowright"," ","e","r","j","x","escape"].includes(k))e.preventDefault();
   if(stageState.mode==="menu" && k!=="escape")return;
   if(k==="q"){engine?.rotate(-.28);return}if(k==="c"){engine?.rotate(.28);return}
   if(k==="escape"){menuBack();return} if(k==="r"){reset();return}
-  key.add(k);if(e.repeat)return;if(k==="e")giveFlowers();if(k===" ")kiss()
+  key.add(k);if(e.repeat)return;if(k==="e")giveFlowers();if(k===" ")kiss();if(k==="j"||k==="x")jump()
 },{passive:false});
 addEventListener("keyup",e=>key.delete(e.key.toLowerCase()));
 addEventListener("blur",()=>{key.clear();autoWalk=false});
@@ -103,16 +115,42 @@ document.addEventListener("contextmenu",e=>{if(e.target.closest?.("#mobile,#came
 document.addEventListener("dblclick",e=>{if(e.target.closest?.("#mobile,#cameraControls,#scene3d"))e.preventDefault()},{passive:false});
 ["gesturestart","gesturechange","gestureend"].forEach(type=>document.addEventListener(type,e=>e.preventDefault(),{passive:false}));
 $("#menuButton").onclick=menuBack;
-$("#travel").onclick=()=>{autoWalk=true};
-prompt.onclick=()=>{if(stageState.mode==="approach")giveFlowers();else kiss()};
+function advanceLevel(){if(stageState.level>=3)return;if(currentCollected()<3){setPrompt(`Todavía faltan ${3-currentCollected()} ramos en este nivel 🌷`,true);return}loadLevel(stageState.level+1);hearts(12);}
+function jump(){
+  if(stageState.level>=3||!player||stageState.mode!=="platform"||(pos[player].jumpY||0)>0.02)return;
+  pos[player].jumpV=5.0;pos[player].jumpY=.03;setPrompt("¡Saltá para pasar los obstáculos!",true);
+}
+$("#travel").onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.level===3)autoWalk=true};
+prompt.onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.mode==="approach"||stageState.mode==="ready"||stageState.mode==="done")giveFlowers();else kiss()};
 document.querySelectorAll("[data-key]").forEach(b=>{const k=b.dataset.key;b.style.touchAction="none";b.style.userSelect="none";const d=e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);key.add(k)},u=e=>{e.preventDefault();key.delete(k)};b.onpointerdown=d;b.onpointerup=u;b.onpointercancel=u;b.onpointerleave=u});
-document.querySelector('[data-action="flowers"]').onclick=giveFlowers;document.querySelector('[data-action="kiss"]').onclick=kiss;
+document.querySelector('[data-action="flowers"]').onclick=giveFlowers;document.querySelector('[data-action="kiss"]').onclick=kiss;document.querySelector('[data-action="jump"]').onclick=jump;
 
 let last=performance.now(),petalT=0;
+function updateMobs(t){
+  for(const m of stageState.mobs){const previous=m.axis==="x"?m.x:m.z,offset=Math.sin(t*m.speed+m.phase)*m.range;if(m.axis==="x")m.x=m.baseX+offset;else m.z=m.baseZ+offset;m.flip=previous>(m.axis==="x"?m.x:m.z)}
+}
+function respawn(){const c=currentChapter();Object.assign(pos[player],{x:c.start.x,z:c.start.z});pos[player].moving=false;stageState.hitCooldown=.8;setPrompt("¡Cuidado con los enemigos y las espinas! Volviste al inicio.",true);hearts(8)}
+function collectNearbyFlowers(){
+  const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
+}
+function updatePlatform(dt,t){
+  stageState.hitCooldown=Math.max(0,stageState.hitCooldown-dt);updateMobs(t);
+  const actor=pos[player];if(actor.jumpY>0||actor.jumpV>0){actor.jumpY+=actor.jumpV*dt;actor.jumpV-=13.5*dt;if(actor.jumpY<=0){actor.jumpY=0;actor.jumpV=0;}}
+  let dx=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0),dz=(key.has("s")||key.has("arrowdown")?1:0)-(key.has("w")||key.has("arrowup")?1:0),moving=false;
+  const l=Math.hypot(dx,dz);if(l){dx/=l;dz/=l;moving=true;const yaw=engine.yaw,wx=dx*Math.cos(yaw)+dz*Math.sin(yaw);dz=-dx*Math.sin(yaw)+dz*Math.cos(yaw);dx=wx;}
+  const previous={x:pos[player].x,z:pos[player].z},nx=Math.max(-X_LIMIT,Math.min(X_LIMIT,pos[player].x+dx*3.7*dt)),nz=Math.max(Z_MIN,Math.min(Z_MAX,pos[player].z+dz*3.7*dt));Object.assign(pos[player],engine.move(pos[player],nx,nz));
+  moving=Math.hypot(pos[player].x-previous.x,pos[player].z-previous.z)>.0001;pos[player].moving=moving;pos[partner].moving=false;if(moving){pos[player].walkTime+=dt;setHeading(pos[player],Math.atan2(dx,dz));}
+  if(stageState.hitCooldown<=0&&((PaperWorld.hazardAt(pos[player].x,pos[player].z)&&actor.jumpY<.22)|| (actor.jumpY<.65&&stageState.mobs.some(m=>Math.hypot(m.x-pos[player].x,m.z-pos[player].z)<.88)))){respawn();return}
+  collectNearbyFlowers();const goal=currentChapter().goal,goalDistance=Math.hypot(pos[player].x-goal.x,pos[player].z-goal.z);
+  if(goalDistance<1.35&&currentCollected()===3){stageState.mode="exit";setPrompt(`¡Nivel ${stageState.level} superado! Presioná para entrar al siguiente →`,true);$("#travel").style.display="block"}
+  else {stageState.mode="platform";$("#travel").style.display="none";setPrompt(`Nivel ${stageState.level} · Ramos ${currentCollected()}/3 · Meta: ${goalDistance.toFixed(1)} m`)}
+  hud.innerHTML=`<strong>Nivel ${stageState.level}/3</strong> · Ramos: ${currentCollected()}/3 · Total: ${stageState.flowers}<br><strong>${stageState.chosen}</strong> · ${escapeHtml(stageState.dedication)}`;
+}
 function update(dt,t){
   petalT+=dt;if(petalT>.23){petalT=0;if(stageState.mode!=="menu"&&Math.random()<.4)petals()}
   if(!player)return;
   stageState.eventT+=dt;
+  if(stageState.level<3){updatePlatform(dt,t);return;}
   const locked=["flowers","kiss"].includes(stageState.mode);
   let dx=0,dz=0,moving=false;
   if(!locked){
@@ -134,7 +172,7 @@ function update(dt,t){
   if(moving)setHeading(pos[player],Math.atan2(dx,dz));
 
   if(stageState.mode==="approach"){
-    if(dist()<2.35){if(!moving)face();setPrompt("Presioná E para darle las flores 🌷")}else setPrompt(`Acercate a ${partner} · ${dist().toFixed(1)} m 💕`);
+    if(dist()<2.35){if(!moving)face();setPrompt(stageState.flowers>stageState.gifted?"Presioná E para regalar un ramo 🌷":"Ya no quedan ramos; volvé a los niveles anteriores 🌷")}else setPrompt(`Acercate a ${partner} · ${dist().toFixed(1)} m 💕`);
   }
   if(stageState.mode==="flowers"){
     face();
@@ -157,7 +195,7 @@ function update(dt,t){
   }
   $("#travel").style.display=dist()>2.35&&!locked?"block":"none";
 
-  hud.innerHTML=`<strong>${stageState.chosen}</strong> · ${escapeHtml(stageState.dedication)}<br>WASD/flechas · E flores · Espacio beso<br>Besos: <strong>${stageState.kisses}</strong> 💋`;
+  hud.innerHTML=`<strong>Nivel 3/3 · ${stageState.chosen}</strong> · Ramos ${stageState.flowers-stageState.gifted}/${stageState.flowers}<br>${escapeHtml(stageState.dedication)}<br>WASD/flechas · E ramo · Espacio beso · Besos: <strong>${stageState.kisses}</strong> 💋`;
 }
 function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(rendererReady){update(dt,now/1000);engine.render(dt,now/1000,stageState,pos,player,partner)}requestAnimationFrame(loop)}
 window.__BUBU_DUDU_PAPER_DATE__={start,reset,menu:menuBack,giveFlowers,kiss,state:stageState,debugNear(){if(player&&partner){pos[player].x=pos[partner].x-1.55;pos[player].z=pos[partner].z+.18;face();}}};
