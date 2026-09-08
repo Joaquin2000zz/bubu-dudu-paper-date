@@ -21,6 +21,7 @@ test('Mobile controls cannot select text or trigger browser zoom gestures',()=>{
 test('Platform controls expose a separate jump action from the kiss action',()=>{
  const html=fs.readFileSync('index.html','utf8'),css=fs.readFileSync('styles/main.css','utf8'),js=fs.readFileSync('src/game.js','utf8');
  assert(html.includes('id="joystick"')&&html.includes('data-action="jump"')&&html.includes('data-action="kiss"'));
+ assert(html.includes('styles/main.css?v=joystick-13979aa'));
  assert(js.includes('function jump')&&js.includes('k==="j"||k==="x"'));
  assert(js.includes('updateJoystick')&&js.includes('mobileAction'));
  assert(css.includes('#joystick')&&css.includes('.acts{grid-template-columns:64px 64px 64px}')&&css.includes('@media(max-width:380px)'));
