@@ -192,6 +192,7 @@ h1{font-family:Georgia,serif;font-size:clamp(40px,7vw,67px);letter-spacing:-3px;
 button:focus-visible{outline:3px solid #b66176;outline-offset:5px}
 #mobile button{touch-action:none;user-select:none;-webkit-user-select:none;border-radius:5px;background:#fff7df;min-height:44px}
 @media(max-width:700px){#menuCard{padding:25px 22px 20px}#chapter{top:95px}#chapter b{font-size:20px}#travel{top:159px}#quest{display:none!important}#hud{left:18px;top:18px;max-width:calc(100vw - 36px)}#prompt{max-width:calc(100vw - 36px);min-width:0;width:calc(100vw - 36px);bottom:88px;font-size:12px}#music{bottom:25px;right:20px}#menuButton{bottom:25px;left:20px}.choices{gap:14px}.choose svg{width:125px;height:130px}.choose{min-height:190px}.tag{font-size:12px}.tips{line-height:1.9}.subtitle{font-size:20px}}
+@media(max-width:380px){#mobile{left:8px;right:8px}.dpad{grid-template:40px 40px 40px/40px 40px 40px}.acts{grid-template-columns:repeat(3,52px);gap:4px}.acts button{height:52px;font-size:10px}}
 @media(pointer:coarse){#mobile{display:none}body.playing #mobile{display:flex}#prompt{bottom:180px}#music{bottom:145px}#menuButton{bottom:145px}}
 @media(max-height:650px){#menu{align-items:flex-start}#menuCard{margin:10px 0}.choose{min-height:155px}.choose svg{height:100px}.tips{margin-top:13px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
