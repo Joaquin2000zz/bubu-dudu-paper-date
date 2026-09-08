@@ -6,4 +6,4 @@ Se buscaron referencias de TikTok e Instagram. No fue posible reproducir y verif
 - Instagram, Dudu’s Bubu’s World: https://www.instagram.com/dudusbubusworld/
 - Referencia textual de la comunidad al patrón “atata / dadada”: https://www.reddit.com/r/BubuAndDudu/comments/1vsag57/new_bubu_and_dudu_animation_from_the_original/
 
-La síntesis utiliza ataques breves, frecuencia fundamental distinta por personaje y filtros de formantes que alternan vocales abiertas y cerradas. Los diálogos escritos están en español y las vocalizaciones son no verbales. El botón de música silencia también estas vocalizaciones.
+La pista del video se analizó localmente para ajustar la síntesis: tiene ataques breves y repetidos, con centros aproximados de 220–360 Hz y armónicos de voz infantil. El juego usa una interpretación original de esas características: Bubu tiene un patrón más bajo y redondo, Dudu uno más brillante y ascendente, y el beso usa dos sílabas cortas. Los diálogos escritos están en español y las vocalizaciones son no verbales. El botón de música silencia también estas vocalizaciones.

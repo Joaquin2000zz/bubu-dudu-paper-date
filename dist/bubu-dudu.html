@@ -872,12 +872,15 @@ function tone(f,d=.18,v=.025,delay=0,type="sine"){if(!stageState.music)return;co
 // Original procedural babble: short consonant attacks and changing vowel formants.
 function babble(name,kind='talk'){
  if(!stageState.music)return;const a=audio();if(!a)return;
- const pitch=name==='Bubu'?510:340,pattern=kind==='kiss'?[.9,1.1]:[1,1.12,1,.92,1.16,.85];
+ // The reference uses tiny repeated syllables: Bubu stays round and low,
+ // Dudu answers with a brighter rising "du-du" cadence.
+ const pitch=name==='Bubu'?238:352;
+ const pattern=kind==='kiss'?(name==='Bubu'?[1.08,1.24]:[1.02,1.18]):name==='Bubu'?[1,.88,1.02,.9]:[1,1.15,1.04,1.2,1.08];
  pattern.forEach((p,i)=>{
   const t=a.currentTime+i*.135,source=a.createOscillator(),envelope=a.createGain();
-  source.type='sawtooth';source.frequency.setValueAtTime(pitch*p,t);source.frequency.exponentialRampToValueAtTime(pitch*p*.8,t+.12);
-  envelope.gain.setValueAtTime(0,t);envelope.gain.linearRampToValueAtTime(.10,t+.014);envelope.gain.exponentialRampToValueAtTime(.001,t+.12);envelope.connect(a.destination);
-  const vowels=i%3===2?[430,1000,2450]:[950,1600,2900];
+  source.type='triangle';source.frequency.setValueAtTime(pitch*p,t);source.frequency.exponentialRampToValueAtTime(pitch*p*(name==='Bubu'?.82:.9),t+.12);
+  envelope.gain.setValueAtTime(0,t);envelope.gain.linearRampToValueAtTime(.13,t+.012);envelope.gain.exponentialRampToValueAtTime(.001,t+.12);envelope.connect(a.destination);
+  const vowels=(i%2===0) ? (name==='Bubu'?[420,920,2200]:[520,1250,2700]) : (name==='Bubu'?[330,760,1900]:[700,1500,3100]);
   const filters=vowels.map((f,j)=>{const filter=a.createBiquadFilter(),gain=a.createGain();filter.type='bandpass';filter.frequency.value=f;filter.Q.value=5;gain.gain.value=[1,.5,.18][j];source.connect(filter);filter.connect(gain);gain.connect(envelope);return [filter,gain]});
   source.start(t);source.stop(t+.14);source.onended=()=>{source.disconnect();envelope.disconnect();for(const [f,g] of filters){f.disconnect();g.disconnect()}};
  });
