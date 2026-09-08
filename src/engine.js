@@ -69,10 +69,33 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
   for(const id of [1,2]){
     const levelGeometry=[];const chapter=PaperWorld.level(id);
     for(const f of chapter.floors)box(levelGeometry,f.x,f.y,f.z,f.w,f.h,f.d,f.color);
-    for(const g of (chapter.gaps||[]))box(levelGeometry,g.x,-.28,g.z,g.w,.08,g.d,'#7f8798');
-    for(const o of chapter.obstacles)box(levelGeometry,o.x,o.y,o.z,o.w,o.h,o.d,o.color);
-    for(const h of chapter.hazards){box(levelGeometry,h.x,.03,h.z,h.w,.10,h.d,'#c96d7f');box(levelGeometry,h.x,.14,h.z,h.w*.72,.05,h.d*.72,'#f1b2a7');}
-    const g=chapter.goal;box(levelGeometry,g.x,.03,g.z,2.5,.13,2.5,'#e7c895');
+    // Deep water is scenery only; the stepping stones are the only collision floors.
+    box(levelGeometry,0,-2.2,0,22,.12,24,id===1?'#17273c':'#4f6974');
+    for(const f of chapter.floors){
+      box(levelGeometry,f.x,-1.65,f.z,f.w*.83,1.5,f.d*.85,id===1?'#354258':'#626f73');
+      box(levelGeometry,f.x,f.top+.006,f.z,f.w-.15,.025,.10,id===1?'#a2b0b9':'#ccd0b2');
+      for(let n=0;n<5;n++)box(levelGeometry,f.x-f.w/2+.2+n*.5,f.top+.01,f.z+.3,.23,.015,.05,id===1?'#83909c':'#b2b99d');
+      for(let n=0;n<9;n++){
+        const xx=f.x-f.w/2+.22+(n*1.73%1)*(f.w-.44),zz=f.z-f.d/2+.15+(n*.37%1)*(f.d-.3);
+        disk(levelGeometry,xx,f.top+.032,zz,.06,.09,color(id===1?'#8b9aa7':'#bec29c'),5);
+      }
+      for(let n=0;n<3;n++)box(levelGeometry,f.x,-.25-n*.34,f.z,f.w-.06,.035,f.d-.06,id===1?'#536076':'#7a867f');
+      const lx=f.x-f.w/2+.12,lz=f.z-.5;
+      box(levelGeometry,lx,f.top,lz,.08,.85,.08,'#454453');
+      box(levelGeometry,lx,f.top+.72,lz,.24,.26,.24,id===1?'#d2bf86':'#f4d39a');
+      box(levelGeometry,lx,f.top+1,lz,.34,.08,.34,'#424654');
+    }
+    for(const o of chapter.obstacles){box(levelGeometry,o.x,o.y,o.z,o.w,o.h,o.d,o.color);box(levelGeometry,o.x,o.y+o.h,o.z,o.w+.1,.06,o.d+.1,'#a3a09a');}
+    for(const h of chapter.hazards){for(let i=0;i<5;i++){const z=h.z-h.d/2+i*h.d/4;const x=h.x,y=.17;for(const [a,b] of [[[-.14,-.12],[.14,-.12]],[[.14,-.12],[.14,.12]],[[.14,.12],[-.14,.12]],[[-.14,.12],[-.14,-.12]]])tri(levelGeometry,[x+a[0],y,z+a[1]],[x+b[0],y,z+b[1]],[x,y+.48,z],color('#958399'));}}
+    // Broken stone arches and layered cliffs surround, rather than hide, the route.
+    for(const side of [-1,1])for(let i=0;i<7;i++){
+      const x=side*(7.3+(i%2)*.8),z=8-i*2.8;
+      box(levelGeometry,x,-1.8,z,1.4,1.6+(i%3)*.4,2,id===1?'#29364c':'#596771');
+      if(i%3===0){box(levelGeometry,x,.1,z,.35,2.1,.38,id===1?'#566075':'#929391');box(levelGeometry,x+side*.4,2,z,.95,.25,.5,id===1?'#626d80':'#a5a293');}
+    }
+    const g=chapter.goal;
+    for(const side of [-1,1])box(levelGeometry,g.x+side*1.1,.15,g.z,.23,2.8,.3,id===1?'#8b9f9e':'#c6baa0');
+    box(levelGeometry,g.x,2.95,g.z,2.5,.23,.4,id===1?'#a6b6ac':'#e5cda5');
     levelScenes.set(id,makeBuffer(levelGeometry));
   }
 
@@ -91,11 +114,18 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
   const actorArt=PaperCharacters.svg;
   for(const name of ['Bubu','Dudu']){
     for(const view of ['front','side','back']){svgTexture(`${name}:${view}:idle:0`,actorArt(name,view));for(let f=0;f<8;f++)svgTexture(`${name}:${view}:walk:${f}`,actorArt(name,view,'walk',f));}
+    for(const mood of ['crying','sad','happy'])for(const view of ['front','side','back']){
+      for(let f=0;f<4;f++)svgTexture(`${name}:${view}:idle:${f}:${mood}`,actorArt(name,view,'idle',f,mood));
+      for(let f=0;f<8;f++)svgTexture(`${name}:${view}:walk:${f}:${mood}`,actorArt(name,view,'walk',f,mood));
+    }
     for(const action of ['give','receive','kiss'])for(let f=0;f<4;f++)svgTexture(`${name}:side:${action}:${f}`,actorArt(name,'side',action,f));
     svgTexture(`${name}:front:happy:0`,actorArt(name,'front','happy'));
   }
   svgTexture('heart','<path d="M50 85C-18 38 15 0 50 29C85 0 118 38 50 85Z" fill="#dd7388" stroke="#914e60" stroke-width="4"/>','-5 -5 110 105');
 
+  svgTexture('warden','<path d="M24 77L12 22 43 38Q70 17 96 38L125 19 113 74Q137 115 115 137Q67 161 22 135Q4 112 24 77Z" fill="#686079" stroke="#d5bac5" stroke-width="4"/><path d="M36 67L57 77M99 67L78 77" stroke="#261f39" stroke-width="7"/><path d="M51 111Q69 94 87 111" fill="none" stroke="#29283f" stroke-width="5"/><ellipse cx="42" cy="87" rx="6" ry="8" fill="#f0bf89"/><ellipse cx="93" cy="87" rx="6" ry="8" fill="#f0bf89"/>','0 0 140 165',false);
+  svgTexture('deadTree','<path d="M112 290L126 175 76 131 38 61 54 52 96 110 126 123 116 36 133 10 147 97 184 57 213 48 193 78 148 133 155 190 202 150 230 144 204 175 154 222 152 290Z" fill="#414659" stroke="#8894a3" stroke-width="4"/><path d="M130 276L139 159M137 139L128 61" stroke="#a2a3a5" stroke-width="3"/>','0 0 260 300',false);
+  svgTexture('dawnTree','<path d="M112 290L126 175 76 131 38 61 54 52 96 110 126 123 116 36 133 10 147 97 184 57 213 48 193 78 148 133 155 190 202 150 230 144 204 175 154 222 152 290Z" fill="#686477" stroke="#aaa1a7" stroke-width="4"/><path d="M65 97Q15 44 65 43Q96 57 65 97M175 96Q159 38 207 35Q231 63 175 96M192 178Q177 126 230 124Q248 156 192 178" fill="#8b9c92" stroke="#bbc5ac" stroke-width="4"/>','0 0 260 300',false);
   const decorations=[];
   function prop(id,x,z,w,h,y=0){decorations.push({id,x,z,w,h,y});}
   [[-8,-7],[8,-7],[-8,0],[8,0],[-8,7],[8,7],[-5,-10],[5,-10]].forEach((p,i)=>prop(i%3===0?'blossomCut':'treeCut',...p,3.3,4.8));
@@ -122,33 +152,37 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
     const width=canvas.clientWidth,height=canvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);
     if(canvas.width!==Math.round(width*dpr)||canvas.height!==Math.round(height*dpr)){canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);gl.viewport(0,0,canvas.width,canvas.height);}
     const pair=state.mode==='flowers'||state.mode==='kiss',p=player?positions[player]:{x:0,z:-2};
-    const wanted=pair?[(positions.Bubu.x+positions.Dudu.x)/2,1.5,(positions.Bubu.z+positions.Dudu.z)/2]:[p.x*.40,1.25,p.z*.50-1.7];
+    const platformChapter=state.mode!=='menu'&&state.level<3;
+    const wanted=platformChapter?[p.x*.65,.6,p.z*.6-1.5]:pair?[(positions.Bubu.x+positions.Dudu.x)/2,1.5,(positions.Bubu.z+positions.Dudu.z)/2]:[p.x*.40,1.25,p.z*.50-1.7];
     const blend=1-Math.exp(-dt*3);focus=focus.map((v,i)=>v+(wanted[i]-v)*blend);yaw+=(targetYaw-yaw)*blend;
     cameraZoom+=((pair?0.72:1)-cameraZoom)*blend;
-    const distance=(width<600?19:21)*cameraZoom,vertical=distance*.32;
+    const distance=(platformChapter?(width<600?23:22):(width<600?19:21))*cameraZoom,vertical=distance*(platformChapter?.43:.32);
     const eye=[focus[0]+Math.sin(yaw)*distance,focus[1]+vertical,focus[2]+Math.cos(yaw)*distance];
     vp=multiply(perspective(Math.PI/4.7,width/height,.1,120),lookAt(eye,focus));gl.uniformMatrix4fv(locations.vp,false,vp);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-    const level=state.level||3,scene=level===3?gardenScene:(levelScenes.get(level)||gardenScene);
+    const level=state.mode==='menu'?3:(state.level||3),scene=level===3?gardenScene:(levelScenes.get(level)||gardenScene);
     drawBuffer(scene);
     // Contact shadows remain on the geometry, independent of sprite orientation.
     const actorNames=level===3?['Bubu','Dudu']:(player?[player]:[]);
-    const shadow=[];for(const name of actorNames){const p=positions[name];disk(shadow,p.x,heightAt(p.x,p.z)+.012,p.z,.70,.30,color('#574532',1,.23));}
+    const shadow=[];for(const name of actorNames){const p=positions[name];if(!Number.isFinite(heightAt(p.x,p.z)))continue;disk(shadow,p.x,heightAt(p.x,p.z)+.012,p.z,.70,.30,color('#574532',1,.23));}
     gl.depthMask(false);draw(shadow);gl.depthMask(true);
     if(level===3){for(const o of decorations)billboard(textures.get(o.id),o.x,o.y,o.z,o.w,o.h,false,0);billboard(textures.get('butterflyCut'),-3,1.8+(reducedMotion?0:Math.sin(t*2)*.25),1,.6,.53,false,yaw,reducedMotion?0:Math.sin(t*4)*.12);}
     else {
       const chapter=PaperWorld.level(level),goal=chapter.goal;
+      for(const side of [-1,1])for(let i=0;i<8;i++)billboard(textures.get(level===1?'deadTree':'dawnTree'),side*(6.8+(i%2)*1.2),-.1,8-i*2.6,2.5,3.2+(i%3)*.5,false,yaw);
       billboard(textures.get('signCut'),goal.x,1.05,goal.z,1.45,1.05,false,yaw);
-      for(const m of (state.mobs||[])){const bob=reducedMotion?0:Math.sin(t*5+m.phase)*.07;billboard(textures.get('hostileCut'),m.x,heightAt(m.x,m.z)+.06+bob,m.z,.92,.86,m.flip,yaw);}
+      for(const m of (state.mobs||[])){const bob=reducedMotion?0:Math.sin(t*(m.mode==='windup'?22:5)+m.phase)*.07;const warning=[];if(m.mode==='windup'||m.mode==='stunned'){disk(warning,m.x,heightAt(m.x,m.z)+.03,m.z,m.mode==='windup'?1.1:.55,.45,color(m.mode==='windup'?'#ef8972':'#e8cf8c',1,.7));draw(warning);}billboard(textures.get('warden'),m.x,heightAt(m.x,m.z)+.06+bob,m.z,1.08,m.mode==='stunned'?.38:1.02,m.flip,yaw);}
       for(const flower of chapter.flowers)if(!(state.collected||[]).includes(flower.id))billboard(textures.get('bouquetCut'),flower.x,heightAt(flower.x,flower.z)+.08,flower.z,.62,.82,false,yaw,-.08);
     }
     stats={};
     for(const name of actorNames){
       const p=positions[name];
       const {view,flip,action,frame,key}=PaperAnimation.pose(name,p,positions,state,player,partner,yaw);
-      const texture=textures.get(key),bounce=reducedMotion?0:p.moving?Math.abs(Math.sin((p.walkTime||0)*11*Math.PI/4))*.075:Math.sin(t*2)*.018;
+      const mood=state.mode==='menu'?'calm':PaperCharacters.emotion(level,state.flowers||0);const emotionalKey=action==='idle'&&mood!=='calm'?`${name}:${view}:idle:${reducedMotion?0:Math.floor(t*5)%4}:${mood}`:action==='walk'&&mood!=='calm'?`${key}:${mood}`:key;
+      const texture=textures.get(emotionalKey)||textures.get(key),bounce=reducedMotion?0:p.moving?Math.abs(Math.sin((p.walkTime||0)*11*Math.PI/4))*.075:Math.sin(t*2)*.018;
       const turn=p.turnT>0?Math.max(.15,Math.abs(Math.cos(p.turnT/.18*Math.PI))):1;
-      billboard(texture,p.x,heightAt(p.x,p.z)+(p.jumpY||0)+bounce-.10,p.z,2.35,2.72,flip,yaw,0,turn);
-      stats[name]={view,action,frame,flip,x:+p.x.toFixed(2),z:+p.z.toFixed(2)};
+      const renderedY=((p.jumpY||0)>0?(p.jumpBase??.15):heightAt(p.x,p.z))+(p.jumpY||0)+bounce-.10;
+      billboard(texture,p.x,renderedY,p.z,2.35,2.72,flip,yaw,0,turn);
+      stats[name]={view,action,frame,flip,emotion:mood,y:renderedY,x:+p.x.toFixed(2),z:+p.z.toFixed(2)};
     }
     if(['flowers','ready','kiss','done'].includes(state.mode)&&player){
       const a=positions[player],b=positions[partner];let x=b.x+(a.x<b.x?-.61:.61),z=b.z+.13,y=heightAt(b.x,b.z)+.7;

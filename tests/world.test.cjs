@@ -38,11 +38,37 @@ test('The campaign has two hostile flower-gathering levels and the original gard
  }
  w.setLevel(3);assert.equal(w.level(3).name,'El jardín de los encuentros');assert.equal(w.level(3).giftSpots.length,3);
 });
-test('A jumping actor can clear a solid obstacle while a grounded actor cannot',()=>{
- w.setLevel(1);const grounded=w.move({x:-3.5,z:4.5},-.5,4.5);const airborne=w.move({x:-3.5,z:4.5,jumpY:.8},-.5,4.5);
- assert(grounded.x< -2.5);assert(airborne.x>-.7);w.setLevel(3);
+test('The fallen log blocks walking but allows a jump across its top',()=>{
+ w.setLevel(1);const o=w.level().obstacles[0],start={x:o.x-.8,z:o.z};
+ const grounded=w.move(start,o.x+.8,o.z),airborne=w.move({...start,jumpY:.8},o.x+.8,o.z);
+ assert(grounded.x<o.x-.4);assert(airborne.x>o.x+.7);w.setLevel(3);
 });
-test('A gap blocks grounded travel and can be crossed in the air',()=>{
- w.setLevel(1);const grounded=w.move({x:-1,z:6.2},-1,4.2);const airborne=w.move({x:-1,z:6.2,jumpY:.8},-1,4.2);
- assert(grounded.z>5.8);assert(airborne.z<4.5);w.setLevel(3);
+test('Every route requires jumps, has reachable landings and keeps flowers on safe floors',()=>{
+ for(const id of [1,2]){w.setLevel(id);const c=w.level();
+  assert.equal(w.supportAt(7,3),-Infinity,'No meadow shortcut');
+  for(const f of c.flowers)assert(Number.isFinite(w.supportAt(f.x,f.z))&&!w.hazardAt(f.x,f.z));
+  for(let i=1;i<c.floors.length;i++){
+   const a=c.floors[i-1],b=c.floors[i];
+   const dx=Math.max(0,Math.abs(a.x-b.x)-(a.w+b.w)/2),dz=Math.max(0,Math.abs(a.z-b.z)-(a.d+b.d)/2);
+   assert(dz>.5,'Each crossing has a real gap');assert(Math.hypot(dx,dz)<1.5,'Landing is inside jump range');
+   const x=Math.max(a.x-a.w/2+.3,Math.min(a.x+a.w/2-.3,b.x));
+   const walk=w.move({x,z:a.z},x,b.z);assert(walk.z>b.z+.6,'Cannot walk across the abyss');
+  }
+ }w.setLevel(3);
+});
+test('Each crossing can be completed using the actual jump speed and gravity',()=>{
+ for(const id of [1,2]){w.setLevel(id);const floors=w.floors;
+  for(let i=1;i<floors.length;i++){
+   const a=floors[i-1],b=floors[i],lo=Math.max(a.x-a.w/2+.3,b.x-b.w/2+.3),hi=Math.min(a.x+a.w/2-.3,b.x+b.w/2-.3);
+   assert(lo<=hi,'There is a usable landing corridor');
+   let p={x:(lo+hi)/2,z:a.z-a.d/2+.15,jumpY:.03},v=5;
+   for(let frame=0;frame<100;frame++){
+    p.jumpY+=v/120;v-=13.5/120;
+    if(p.jumpY<=0){p.jumpY=0;break}
+    p={...p,...w.move(p,p.x,Math.max(b.z,p.z-3.7/120))};
+   }
+   assert(Math.abs(p.z-b.z)<.2,`Level ${id}, crossing ${i} reaches its destination`);
+   assert(Number.isFinite(w.supportAt(p.x,p.z)),`Level ${id}, crossing ${i} has a safe landing`);
+  }
+ }w.setLevel(3);
 });

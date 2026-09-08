@@ -50,3 +50,13 @@ test('Walking and idle drawings show two arms in front, one on the side, none on
     }
   }
 });
+
+test('Emotions recover with bouquets and chapters without changing character identity',()=>{
+ const c=scope.characters;
+ assert.equal(c.emotion(1,0),'crying');assert.equal(c.emotion(1,1),'sad');assert.equal(c.emotion(1,3),'calm');assert.equal(c.emotion(2,3),'calm');assert.equal(c.emotion(2,5),'happy');assert.equal(c.emotion(3,6),'happy');
+ for(const name of ['Bubu','Dudu'])for(const mood of ['crying','sad','calm','happy']){
+ const svg=c.svg(name,'front','walk',2,mood);assert(svg.includes(name==='Bubu'?'#fffdf9':'#d9a181'));
+ assert.equal(svg.includes('data-emotion='),mood==='crying'||mood==='sad');
+ assert(!c.svg(name,'back','walk',2,mood).includes('data-emotion='));
+ }
+});

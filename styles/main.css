@@ -127,7 +127,7 @@ h1{margin:0;font-size:clamp(34px,6vw,55px);letter-spacing:-2px}
 kbd{display:inline-block;padding:2px 6px;min-width:25px;border:1px solid #d9c4ca;border-radius:6px;background:#f1e5e8;box-shadow:0 2px 0 #ceb9c0;font-weight:900}
 
 #mobile{display:none;position:absolute;left:10px;right:10px;bottom:10px;justify-content:space-between;align-items:end;pointer-events:none;z-index:40}
-.joystick,.acts{pointer-events:auto}
+#joystick,.acts{pointer-events:auto}
 #joystick{position:relative;width:126px;height:126px;border:2px solid rgba(87,55,67,.24);border-radius:50%;background:radial-gradient(circle at 38% 32%,#fffdf6e8,#ead9bcdd);box-shadow:0 5px 0 rgba(87,55,67,.16),inset 0 0 0 10px #fff9e355;touch-action:none}
 #joystick:after{content:"";position:absolute;inset:26px;border:1px dashed #b79872aa;border-radius:50%;pointer-events:none}
 #joystickKnob{position:absolute;left:50%;top:50%;width:55px;height:55px;margin:-27.5px;border:2px solid #85634e;border-radius:50%;background:#f7dfb9;box-shadow:3px 4px 0 #85634e55;transform:translate(0,0);pointer-events:none}
@@ -219,3 +219,28 @@ button:focus-visible{outline:3px solid #b66176;outline-offset:5px}
 #cameraControls span{font-size:9px;letter-spacing:1px}#cameraControls button{border:0;background:#ebdcc0;font-size:21px;width:34px;height:31px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
 #hud{max-width:300px}#chapter{pointer-events:none}
 @media(max-width:700px){#scene3d{height:calc(100% - 110px)}#chapter{display:none}#cameraControls{top:142px;right:18px}#travel{top:145px;left:18px;transform:none;font-size:11px;padding:12px}#hud{max-width:calc(100% - 36px)}#prompt{bottom:210px}#music,#menuButton{bottom:165px}}
+
+/* The story moves from cold midnight through dawn into the unchanged garden. */
+body[data-chapter="1"] #app{background:linear-gradient(#101728,#273449 58%,#151d30)}
+body[data-chapter="2"] #app{background:linear-gradient(#42465e,#ac8890 56%,#697a79)}
+body[data-chapter="1"] .sun{background:#b6c9d8;border-color:#657b91;box-shadow:0 0 65px #a9c8df44;width:75px;height:75px}
+body[data-chapter="2"] .sun{background:#edc8a3;border-color:#c9a8a4;opacity:.7}
+body[data-chapter="1"] .cloud{background:#344255;border-color:#4b596e;opacity:.7}
+body[data-chapter="2"] .cloud{background:#8b8595;border-color:#afa1ac;opacity:.8}
+body[data-chapter="1"] #hillBack{background:#253146}body[data-chapter="1"] #hillFront{background:#1b273b}
+body[data-chapter="2"] #hillBack{background:#686879}body[data-chapter="2"] #hillFront{background:#566b70}
+body[data-chapter="1"] .paperUI,body[data-chapter="1"] #cameraControls{background:#263346;color:#e1e4ec;border-color:#7a8d9f;box-shadow:3px 5px #101c30}
+body[data-chapter="2"] .paperUI{background:#e0d9d1;border-color:#787581;box-shadow:3px 5px #535667}
+body[data-chapter="1"] #chapter{color:#c8d6e8}body[data-chapter="2"] #chapter{color:#eee0d0}
+body[data-chapter="1"] .petal{width:1px;height:24px;background:#c4d8ec55;border-radius:0}
+body[data-chapter="2"] .petal{background:#e6c79888}
+body[data-chapter="1"] #sky:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(105deg,transparent 0 65px,#b3c7e00b 66px 67px,transparent 68px 130px);pointer-events:none}
+@media(any-pointer:coarse){body.playing #mobile{display:flex}}
+
+body[data-chapter="1"] #cameraControls button{color:#293449;background:#c1cbd0}
+body[data-chapter="1"] #app:after{border-color:#798da255}
+body[data-chapter="1"] #sky:after{animation:rainDrift 1.4s linear infinite}
+@keyframes rainDrift{to{transform:translate(-30px,80px)}}
+@media(prefers-reduced-motion:reduce){body[data-chapter="1"] #sky:after{animation:none}}
+
+body[data-chapter="1"] #toast{background:#29384a;color:#efdbc0;border-color:#7b8f9f}

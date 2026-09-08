@@ -44,3 +44,10 @@ El entorno combina plataformas, huecos, escalones, obstáculos, mobs y el jardí
 El apoyo del personaje se calcula sobre las mismas piezas que se dibujan. El radio de los pies evita hundirse al tocar un borde; los desniveles altos bloquean el paso y la escalera permite subir y bajar. El puente incluye accesos bajos y apoyo continuo entre tablas. Caminar y acercarse durante el beso usan el mismo movimiento con colisiones, dividido en pasos pequeños para no atravesar obstáculos.
 
 Referencias y decisiones de identidad: `DIRECCION_ARTISTICA.md`.
+
+
+### Recorrido emocional y desafíos
+
+El valle de las cartas perdidas transcurre bajo lluvia y luz de luna; el bosque del primer amanecer recupera luz y vegetación. El jardín final conserva su estética original. Los primeros capítulos tienen siete islas, seis cruces obligatorios y tres ramos cada uno. Cada ramo conserva el progreso y establece un punto de retorno. Los guardianes anuncian una embestida, atacan y descansan; saltarles encima los aturde. Las expresiones pasan de llanto a tristeza, calma y alegría con los ramos y los capítulos.
+
+Prueba táctil de regresión: `node tests/mobile-browser.cjs` con Playwright instalado (o `PLAYWRIGHT_MODULE` apuntando a su módulo), servidor en el puerto 8765 y Edge disponible. Verifica toques reales mediante CDP, joystick y salto simultáneos, embestidas, puntos de retorno, el salto sobre el vacío y controles en el jardín. `BROWSER_CHANNEL` permite elegir otro canal de Chromium. Las capturas se guardan en `tests/artifacts/`. La inspección de posiciones se habilita únicamente con `?test=1`.

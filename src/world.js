@@ -14,53 +14,23 @@ const PaperWorld=(()=>{
 
  const floor=(id,x,y,z,w,h,d,color)=>({id,x,y,z,w,h,d,color,top:y+h});
  const LEVELS={
-  1:{
-   id:1,name:'La pradera de papel',chapter:'CAPÍTULO 01',start:{x:-3.5,z:7},goal:{x:7,z:-7},
-   floors:[
-    floor('l1-ground',0,-.12,0,20,.15,21.7,'#9fbe83'),
-    floor('l1-step-a',-5,.03,1.35,3.7,.12,.70,'#d7af80'),floor('l1-step-b',-5,.15,1.85,3.7,.12,.70,'#e8c999'),
-    floor('l1-platform-a',-5,.27,2.8,4.1,.16,2.45,'#e8c895'),
-    floor('l1-step-c',0,.03,-.3,3.0,.12,.70,'#d7af80'),floor('l1-step-d',0,.15,-.8,3.0,.12,.70,'#e8c999'),
-    floor('l1-platform-b',0,.27,-1.45,3.7,.18,2.25,'#dcb783'),
-    floor('l1-platform-c',5,.22,-5.0,3.7,.16,2.4,'#efd39f'),
-    floor('l1-bridge-a',-1.0,.27,5.3,3.0,.16,.72,'#e7c895'),floor('l1-bridge-b',2.0,.30,.3,3.0,.16,.72,'#e7c895'),floor('l1-bridge-c',4.0,.27,-3.5,3.0,.16,.72,'#e7c895')
-   ],
-   gaps:[{id:'l1-gap-a',x:0,z:5.3,w:19,d:1.15},{id:'l1-gap-b',x:0,z:.3,w:19,d:1.15},{id:'l1-gap-c',x:0,z:-3.5,w:19,d:1.15}],
-   obstacles:[
-    {id:'l1-crate-a',x:-1.9,z:4.5,w:1.0,d:1.0,y:.03,h:.72,color:'#a86f4d',kind:'crate'},
-    {id:'l1-crate-b',x:2.9,z:1.5,w:1.2,d:1.2,y:.03,h:.82,color:'#b47e53',kind:'crate'},
-    {id:'l1-rock',x:6.3,z:1.7,w:1.1,d:.9,y:.03,h:.55,color:'#8f6b78',kind:'rock'}
-   ],
-   hazards:[{id:'l1-thorns',x:-2.8,z:-4.1,w:1.8,d:1.0},{id:'l1-thorns-b',x:3.0,z:-3.3,w:1.7,d:.9}],
-   flowers:[{id:'l1-flower-a',x:-6.3,z:3.2},{id:'l1-flower-b',x:.1,z:-1.3},{id:'l1-flower-c',x:5.6,z:-5.0}],
-   mobs:[{id:'l1-slime-a',x:-2.8,z:6,axis:'x',range:2.0,speed:1.1},{id:'l1-slime-b',x:4.4,z:-1.0,axis:'z',range:1.7,speed:1.35}]
-  },
-  2:{
-   id:2,name:'El bosque de cartulina',chapter:'CAPÍTULO 02',start:{x:-3.5,z:7},goal:{x:7,z:-7},
-   floors:[
-    floor('l2-ground',0,-.12,0,20,.15,21.7,'#89ad83'),
-    floor('l2-island-a',-5,.35,4.0,3.8,.18,2.4,'#cda97e'),floor('l2-island-b',-1,.70,1.0,3.0,.18,2.1,'#e4c08e'),
-    floor('l2-island-c',3,.38,-2.0,3.5,.18,2.0,'#d3ad7c'),floor('l2-island-d',6,.72,-5.5,3.0,.18,2.2,'#efd49f'),
-    floor('l2-step-a',-3,.03,2.7,1.0,.15,.65,'#d2aa78'),floor('l2-step-b',-2.2,.18,2.0,1.0,.15,.65,'#e4c28e'),
-    floor('l2-step-c',1,.03,-.8,1.0,.15,.65,'#d2aa78'),floor('l2-step-d',1.8,.18,-1.4,1.0,.15,.65,'#e4c28e'),
-    floor('l2-step-e',4.5,.03,-4.2,1.0,.15,.65,'#d2aa78'),floor('l2-step-f',5.3,.18,-4.8,1.0,.15,.65,'#e4c28e'),
-    floor('l2-bridge-a',-3.5,.46,5.3,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-b',-.2,.72,1.8,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-c',2.7,.46,-1.4,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-d',5.0,.72,-4.5,3.0,.18,.72,'#e4c08e')
-   ],
-   gaps:[{id:'l2-gap-a',x:0,z:5.3,w:19,d:1.15},{id:'l2-gap-b',x:0,z:1.8,w:19,d:1.15},{id:'l2-gap-c',x:0,z:-1.4,w:19,d:1.15},{id:'l2-gap-d',x:0,z:-4.5,w:19,d:1.15}],
-   obstacles:[
-    {id:'l2-log-a',x:-6.4,z:-1.8,w:2.2,d:.75,y:.03,h:.75,color:'#866048',kind:'log'},
-    {id:'l2-crate-a',x:1.3,z:4.4,w:1.2,d:1.2,y:.03,h:.95,color:'#9c674a',kind:'crate'},
-    {id:'l2-rock-a',x:-4.0,z:-4.0,w:1.4,d:1.2,y:.03,h:.65,color:'#766b7f',kind:'rock'}
-   ],
-   hazards:[{id:'l2-thorns-a',x:-.1,z:4.0,w:1.6,d:.9},{id:'l2-thorns-b',x:3.7,z:1.4,w:1.8,d:.8},{id:'l2-thorns-c',x:6.0,z:-1.7,w:1.4,d:.9}],
-   flowers:[{id:'l2-flower-a',x:-5.0,z:4.0},{id:'l2-flower-b',x:-1.0,z:1.0},{id:'l2-flower-c',x:6.0,z:-5.5}],
-   mobs:[{id:'l2-slime-a',x:-6.2,z:5.8,axis:'x',range:1.8,speed:1.45},{id:'l2-slime-b',x:2.2,z:-5.8,axis:'z',range:2.1,speed:1.7},{id:'l2-slime-c',x:5.2,z:2.5,axis:'x',range:1.5,speed:1.25}]
-  },
   3:{
    id:3,name:'El jardín de los encuentros',chapter:'CAPÍTULO 03 · FINAL',start:{x:-.8,z:3},goal:{x:1,z:-5.7},
    floors:gardenFloors,gaps:[],obstacles:[],hazards:[],mobs:[],flowers:[],giftSpots:[{x:-2.8,z:4.8},{x:2.2,z:3.8},{x:4.7,z:-1.2}]
   }
  };
+ // Floating stepping stones: no invisible walkable meadow under the route.
+ const routes={1:[[-3,7],[-4,4.5],[-2,2],[0,-.5],[2,-3],[4,-5.5],[3,-8]],2:[[-3,7],[-1,4.5],[1,2],[-1,-.5],[1,-3],[3,-5.5],[3,-8]]};
+ for(const id of [1,2]){
+  const route=routes[id],dark=id===1;
+  const platforms=route.map(([x,z],i)=>floor(`l${id}-island-${i}`,x,-.35+(i%2)*.12,z,i===0||i===6?3.4:(id===1?3:2.7),.5,i===0||i===6?2.1:1.65,dark?'#687788':'#8b9988'));
+  LEVELS[id]={id,name:dark?'El valle de las cartas perdidas':'El bosque del primer amanecer',chapter:`CAPÍTULO 0${id}`,start:{x:route[0][0],z:route[0][1]},goal:{x:route[6][0],z:route[6][1]},floors:platforms,
+   gaps:route.slice(0,-1).map(([x,z],i)=>({id:`abyss-${i}`,x:0,z:z-1.25,w:20,d:.6})),
+   obstacles:[{id:`l${id}-fallen-log`,x:route[2][0]+.7,z:route[2][1],w:.5,d:1.1,y:.15,h:.65,color:dark?'#454659':'#6a645f',kind:'log'}],
+   hazards:[{id:'brambles-a',x:route[3][0]-.95,z:route[3][1],w:.45,d:1.2},{id:'brambles-b',x:route[5][0]+.95,z:route[5][1],w:.45,d:1.2}],
+   flowers:[1,3,5].map((i,k)=>({id:`l${id}-flower-${k}`,x:route[i][0],z:route[i][1]-.2})),
+   mobs:[2,4,5].map((i,k)=>({id:`l${id}-warden-${k}`,x:route[i][0]-.5,z:route[i][1],axis:'x',range:.65,speed:dark?1.5:2,arena:platforms[i],windup:dark?.85:.6,recovery:dark?1.5:1.1})),route};
+ }
  let activeId=3,activeFloors=gardenFloors;
  const radius=.24,maxStep=.23;
  function setLevel(id){activeId=Number(id);if(!LEVELS[activeId])throw Error(`Nivel inexistente: ${id}`);activeFloors=LEVELS[activeId].floors;return LEVELS[activeId]}

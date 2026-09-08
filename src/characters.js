@@ -1,8 +1,8 @@
 /* Shared identity and authored animation frames. No renderer or DOM dependency. */
-  function actorArt(name,view,action='idle',frame=0){
+  function actorArt(name,view,action='idle',frame=0,emotion='calm'){
     const panda=name==='Bubu',fur=panda?'#fffdf9':'#d9a181',dark='#503329',ear=panda?'#492d27':fur,cheek=panda?'#f4b0ae':'#f5ca80';
     const walk=action==='walk',phase=frame/8*Math.PI*2,step=walk?Math.sin(phase):0,bob=walk?Math.abs(Math.sin(phase))*4:0;
-    const giving=action==='give',receive=action==='receive',kissing=action==='kiss',happy=action==='happy';
+    const giving=action==='give',receive=action==='receive',kissing=action==='kiss',happy=action==='happy'||emotion==='happy';
     const arm=giving?frame/3:receive?1:0,lean=kissing?frame*2.5:0;
     const foot=(x,y,angle)=>`<g transform="rotate(${angle} ${x} ${y})"><ellipse cx="${x}" cy="${y}" rx="18" ry="12" fill="${panda?'#492d27':fur}"/></g>`;
     let body=`<g stroke="${dark}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(${lean} 130 270)">`;
@@ -34,7 +34,14 @@
       if(view==='back')body+=`<circle cx="130" cy="246" r="12" fill="${panda?'#492d27':fur}"/>`;
       if(view!=='back')body+=`<g data-part="arm" transform="rotate(${step*12} 83 219)"><path d="M83 219Q104 222 101 234Q96 242 80 236" fill="${fur}"/></g><g data-part="arm" transform="rotate(${-step*12} 177 219)"><path d="M177 219Q156 222 159 234Q164 242 180 236" fill="${fur}"/></g>`;
     }
+    if(view!=='back'&&(emotion==='crying'||emotion==='sad')){
+      const side=view==='side',eyes=side?[122,188]:[91,168],mouth=side?158:130;
+      body=body.replace('<path d="M148 163q5 8 11 1q6 7 11 -1" fill="none" stroke-width="3.5"/>',`<path d="M148 170q11 -10 22 0" fill="none" stroke-width="3.5"/>`).replace('<path d="M119 162Q123 170 130 163Q137 170 141 162" fill="none" stroke-width="3.5"/>','<path d="M119 171Q130 160 141 171" fill="none" stroke-width="3.5"/>');
+      body+=`<g data-emotion="${emotion}" transform="translate(0 ${-bob})" stroke-width="3" fill="none"><path d="M${eyes[0]-10} 141l15 -5M${eyes[1]-5} 136l15 5" stroke="${dark}"/>`;
+      for(const [i,x] of eyes.entries())if(emotion==='crying'||i===0){const y=167+(frame%4)*3;body+=`<path d="M${x} ${y}q-12 17 -7 24q7 9 14 0q5 -7 -7 -24Z" fill="#9fdcec" stroke="#6ca4c2"/><path d="M${x-3} ${y+13}v7" stroke="#e4f8ff"/>`;}
+      body+='</g>';
+    }
     return body+'</g>';
   }
 
-const PaperCharacters={svg:actorArt};
+const PaperCharacters={svg:actorArt,emotion(level,flowers=0){return level===3||flowers>=5?'happy':level===2?'calm':flowers===0?'crying':flowers<3?'sad':'calm'}};

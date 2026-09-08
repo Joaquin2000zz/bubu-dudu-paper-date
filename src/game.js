@@ -45,12 +45,12 @@ function currentCollected(){const ids=currentChapter().flowers||[];return ids.fi
 function updateChapterUi(){const c=currentChapter();chapter.innerHTML=`${c.chapter}<b>${c.name}</b>`;const count=stageState.level<3?`${currentCollected()}/3`:`${stageState.flowers-stageState.gifted}/${stageState.flowers}`;hud.innerHTML=`<strong>Nivel ${stageState.level}/3</strong> · Ramos: ${count}<br><strong>${stageState.chosen||"Bubu"}</strong> · ${escapeHtml(stageState.dedication||"Para Bettina, con todo mi amor 💗")}`}
 function resetActorState(p){p.moving=false;p.walkTime=0;p.turnT=0;p.heading=0;p.jumpY=0;p.jumpV=0}
 function loadLevel(levelNumber){
-  const c=PaperWorld.setLevel(levelNumber);stageState.level=levelNumber;stageState.eventT=0;stageState.hitCooldown=0;stageState.giftSpots=c.giftSpots||[];joystick.x=joystick.y=0;document.querySelector("#joystickKnob")?.style.setProperty("transform","translate(0,0)");
+  document.body.dataset.chapter=String(levelNumber);stageState.checkpoint=null;const c=PaperWorld.setLevel(levelNumber);stageState.level=levelNumber;stageState.eventT=0;stageState.hitCooldown=0;stageState.giftSpots=c.giftSpots||[];joystick.x=joystick.y=0;document.querySelector("#joystickKnob")?.style.setProperty("transform","translate(0,0)");
   stageState.mobs=(c.mobs||[]).map((m,i)=>({...m,baseX:m.x,baseZ:m.z,phase:i*.9,flip:false}));
   const start=c.start;Object.assign(pos[player],{x:start.x,z:start.z,flip:false,heading:Math.PI});
   Object.assign(pos[partner],{x:c.goal.x,z:c.goal.z,flip:true,heading:0});
   for(const p of Object.values(pos))resetActorState(p);
-  pos[player].heading=Math.PI;pos[partner].heading=0;
+  pos[player].heading=0;pos[partner].heading=0;
   updateChapterUi();
   if(levelNumber===3){stageState.mode="approach";quest.innerHTML='<span class="q on" data-q="approach">1 · ACERCATE</span><span class="q" data-q="flowers">2 · FLORES</span><span class="q" data-q="kiss">3 · BESO</span>';quest.style.display="flex";setQuest("approach");setPrompt(stageState.flowers>stageState.gifted?`Acercate a ${partner} · elegí un ramo 🌷`:`Acercate a ${partner} · ya no quedan ramos`);$("#travel").style.display="block";$("#travel").textContent="Seguir el caminito →"}
   else {stageState.mode="platform";quest.innerHTML=`<span class="q on">NIVEL ${levelNumber}/3</span><span class="q">RAMOS ${currentCollected()}/3</span><span class="q">META</span>`;quest.style.display="flex";setPrompt(`Nivel ${levelNumber}: juntá los 3 ramos y llegá a la bandera 🌷`);$("#travel").style.display="none";$("#travel").textContent=`Entrar al nivel ${levelNumber+1} →`}
@@ -65,7 +65,7 @@ function start(name){
 $("#chooseBubu").onclick=()=>start("Bubu");$("#chooseDudu").onclick=()=>start("Dudu");
 
 function reset(){ if(!stageState.chosen){menu.style.display="flex";return} start(stageState.chosen) }
-function menuBack(){key.clear();joystick.x=joystick.y=0;autoWalk=false;PaperWorld.setLevel(3);document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
+function menuBack(){key.clear();joystick.x=joystick.y=0;autoWalk=false;PaperWorld.setLevel(3);delete document.body.dataset.chapter;document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
 
 function hearts(n=18){
   if(reducedMotion)return;
@@ -93,7 +93,7 @@ function kiss(){
 let ac=null,musicTimer=null,note=0;const melody=[523.25,659.25,783.99,659.25,587.33,698.46,783.99,880,783.99,659.25,587.33,523.25];
 function audio(){try{ac||=new (window.AudioContext||window.webkitAudioContext)();ac.resume?.();return ac}catch{return null}}
 function tone(f,d=.18,v=.025,delay=0,type="sine"){if(!stageState.music)return;const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+delay;o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.03)}
-function startMusic(){audio();if(musicTimer)return;musicTimer=setInterval(()=>{if(!stageState.music||stageState.mode==="menu")return;const n=melody[note++%melody.length];tone(n,.3,.012);tone(n/2,.38,.006,.02,"triangle")},440)}
+function startMusic(){audio();if(musicTimer)return;musicTimer=setInterval(()=>{if(!stageState.music||stageState.mode==="menu")return;const tune=stageState.level===1?[220,261.63,293.66,261.63,196,233.08,220,174.61]:stageState.level===2?[293.66,349.23,440,392,349.23,329.63,293.66,261.63]:melody;const n=tune[note++%tune.length];tone(n,.3,.012);tone(n/2,.38,.006,.02,"triangle")},440)}
 function flowerChime(){tone(659,.17,.045);tone(784,.2,.042,.1);tone(988,.3,.038,.2)}
 function kissChime(){tone(784,.14,.045);tone(1047,.18,.04,.08);tone(1319,.25,.035,.16)}
 $("#music").onclick=()=>{stageState.music=!stageState.music;$("#music").textContent=`♫ Música: ${stageState.music?"sí":"no"}`;if(stageState.music){audio();startMusic()}};
@@ -119,7 +119,7 @@ $("#menuButton").onclick=menuBack;
 function advanceLevel(){if(stageState.level>=3)return;if(currentCollected()<3){setPrompt(`Todavía faltan ${3-currentCollected()} ramos en este nivel 🌷`,true);return}loadLevel(stageState.level+1);hearts(12);}
 function jump(){
   if(stageState.level>=3||!player||stageState.mode!=="platform"||(pos[player].jumpY||0)>0.02)return;
-  pos[player].jumpV=5.0;pos[player].jumpY=.03;setPrompt("¡Saltá para pasar los obstáculos!",true);
+  pos[player].jumpBase=PaperWorld.supportAt(pos[player].x,pos[player].z);pos[player].jumpV=5.0;pos[player].jumpY=.03;setPrompt("¡Saltá para pasar los obstáculos!",true);
 }
 $("#travel").onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.level===3)autoWalk=true};
 prompt.onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.mode==="approach"||stageState.mode==="ready"||stageState.mode==="done")giveFlowers();else kiss()};
@@ -136,23 +136,36 @@ document.addEventListener("pointerup",e=>{if(e.pointerId===joystickPointer)relea
 document.addEventListener("pointercancel",e=>{if(e.pointerId===joystickPointer)releaseJoystick()},{capture:true});
 function findTouch(list,id){if(!list)return null;for(let i=0;i<list.length;i++){const p=list[i];if(id===undefined||p.identifier===id)return p}return null}
 function touchPoint(e,id){const p=findTouch(e.changedTouches,id)||findTouch(e.touches,id);return p?{clientX:p.clientX,clientY:p.clientY}:null}
+if(!window.PointerEvent){
 document.addEventListener("touchstart",e=>{if(joystickPointer!==null){e.preventDefault();return}if(!e.target.closest?.("#joystick"))return;const p=e.changedTouches?.[0];if(!p)return;e.preventDefault();touchJoystick=true;touchJoystickId=p.identifier;updateJoystick({clientX:p.clientX,clientY:p.clientY})},{capture:true,passive:false});
 document.addEventListener("touchmove",e=>{if(joystickPointer!==null){e.preventDefault();return}if(!touchJoystick)return;const p=touchPoint(e,touchJoystickId);if(!p)return;e.preventDefault();updateJoystick(p)},{capture:true,passive:false});
 document.addEventListener("touchend",e=>{if(!touchJoystick||!findTouch(e.changedTouches,touchJoystickId))return;e.preventDefault();touchJoystick=false;touchJoystickId=null;releaseJoystick()},{capture:true,passive:false});
 document.addEventListener("touchcancel",e=>{if(joystickPointer!==null){e.preventDefault();return}releaseJoystick()},{capture:true,passive:false});
+}
 function mobileAction(selector,action){const b=$(selector);if(!b)return;let touchedAt=0;b.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"&&e.pointerType!=="pen")return;e.preventDefault();b.setPointerCapture?.(e.pointerId);touchedAt=performance.now();action()},{passive:false});b.addEventListener("click",e=>{if(performance.now()-touchedAt<600){e.preventDefault();return}action()},{passive:false});}
 mobileAction('[data-action="flowers"]',giveFlowers);mobileAction('[data-action="kiss"]',kiss);mobileAction('[data-action="jump"]',jump);
 
 let last=performance.now(),petalT=0;
-function updateMobs(t){
-  for(const m of stageState.mobs){const previous=m.axis==="x"?m.x:m.z,offset=Math.sin(t*m.speed+m.phase)*m.range;if(m.axis==="x")m.x=m.baseX+offset;else m.z=m.baseZ+offset;m.flip=previous>(m.axis==="x"?m.x:m.z)}
+function updateMobs(dt,t){
+ for(const m of stageState.mobs){
+  m.timer=Math.max(0,(m.timer||0)-dt);const a=m.arena,p=pos[player];
+  if(m.mode==='stunned'){if(!m.timer)m.mode='patrol';continue}
+  if(m.mode==='windup'&&!m.timer){m.mode='charge';m.timer=.38;const d=Math.hypot(p.x-m.x,p.z-m.z)||1;m.vx=(p.x-m.x)/d;m.vz=(p.z-m.z)/d;}
+  else if(m.mode==='charge'){m.x+=m.vx*5.4*dt;m.z+=m.vz*5.4*dt;if(!m.timer){m.mode='recover';m.timer=m.recovery}}
+  else if(m.mode==='recover'){if(!m.timer)m.mode='patrol'}
+  else if(m.mode!=='windup'){
+   m.mode='patrol';m.x=m.baseX+Math.sin(t*m.speed+m.phase)*m.range;
+   if(Math.hypot(p.x-m.x,p.z-m.z)<3.4){m.mode='windup';m.timer=m.windup}
+  }
+  m.x=Math.max(a.x-a.w/2+.35,Math.min(a.x+a.w/2-.35,m.x));m.z=Math.max(a.z-a.d/2+.3,Math.min(a.z+a.d/2-.3,m.z));m.flip=p.x<m.x;
+ }
 }
-function respawn(){const c=currentChapter();Object.assign(pos[player],{x:c.start.x,z:c.start.z,jumpY:0,jumpV:0});pos[player].moving=false;stageState.hitCooldown=.8;setPrompt("¡Cuidado con los enemigos y los huecos! Volviste al inicio.",true);hearts(8)}
+function respawn(){const c=currentChapter(),checkpoint=stageState.checkpoint||c.start;Object.assign(pos[player],{x:checkpoint.x,z:checkpoint.z,jumpY:0,jumpV:0});pos[player].moving=false;stageState.hitCooldown=1.4;toast.textContent=stageState.checkpoint?'De vuelta al último ramo':'Intentá de nuevo · esperá el momento';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1300);}
 function collectNearbyFlowers(){
-  const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
+  const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){stageState.checkpoint={x:f.x,z:f.z};stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
 }
 function updatePlatform(dt,t){
-  stageState.hitCooldown=Math.max(0,stageState.hitCooldown-dt);updateMobs(t);
+  stageState.hitCooldown=Math.max(0,stageState.hitCooldown-dt);updateMobs(dt,t);
   const actor=pos[player];if(actor.jumpY>0||actor.jumpV>0){actor.jumpY+=actor.jumpV*dt;actor.jumpV-=13.5*dt;if(actor.jumpY<=0){actor.jumpY=0;actor.jumpV=0;}}
   const keyboardX=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0),keyboardZ=(key.has("s")||key.has("arrowdown")?1:0)-(key.has("w")||key.has("arrowup")?1:0),analog=Math.hypot(joystick.x,joystick.y)>.04;
   let dx=analog?joystick.x:keyboardX,dz=analog?joystick.y:keyboardZ,moving=false;
@@ -160,10 +173,11 @@ function updatePlatform(dt,t){
   const previous={x:pos[player].x,z:pos[player].z},nx=Math.max(-X_LIMIT,Math.min(X_LIMIT,pos[player].x+dx*3.7*dt)),nz=Math.max(Z_MIN,Math.min(Z_MAX,pos[player].z+dz*3.7*dt));Object.assign(pos[player],engine.move(pos[player],nx,nz));
   moving=Math.hypot(pos[player].x-previous.x,pos[player].z-previous.z)>.0001;pos[player].moving=moving;pos[partner].moving=false;if(moving){pos[player].walkTime+=dt;setHeading(pos[player],Math.atan2(dx,dz));}
   if(actor.jumpY<=0&&PaperWorld.supportAt(pos[player].x,pos[player].z)<-100){respawn();return}
-  if(stageState.hitCooldown<=0&&((PaperWorld.hazardAt(pos[player].x,pos[player].z)&&actor.jumpY<.22)|| (actor.jumpY<.65&&stageState.mobs.some(m=>Math.hypot(m.x-pos[player].x,m.z-pos[player].z)<.88)))){respawn();return}
+  if(stageState.hitCooldown<=0&&((PaperWorld.hazardAt(pos[player].x,pos[player].z)&&actor.jumpY<.22)|| (actor.jumpY<.4&&stageState.mobs.some(m=>m.mode!=="stunned"&&Math.hypot(m.x-pos[player].x,m.z-pos[player].z)<.88)))){respawn();return}
+  for(const m of stageState.mobs)if(m.mode!=='stunned'&&actor.jumpV<0&&actor.jumpY>.4&&actor.jumpY<.85&&Math.hypot(m.x-actor.x,m.z-actor.z)<.8){m.mode='stunned';m.timer=2.5;actor.jumpV=3.2;flowerChime();}
   collectNearbyFlowers();const goal=currentChapter().goal,goalDistance=Math.hypot(pos[player].x-goal.x,pos[player].z-goal.z);
   if(goalDistance<1.35&&currentCollected()===3){stageState.mode="exit";setPrompt(`¡Nivel ${stageState.level} superado! Presioná para entrar al siguiente →`,true);$("#travel").style.display="block"}
-  else {stageState.mode="platform";$("#travel").style.display="none";setPrompt(`Nivel ${stageState.level} · Ramos ${currentCollected()}/3 · Meta: ${goalDistance.toFixed(1)} m`)}
+  else {stageState.mode="platform";$("#travel").style.display="none";setPrompt(`Nivel ${stageState.level} · Ramos ${currentCollected()}/3 · Saltá entre islas · esquivá la embestida`)}
   hud.innerHTML=`<strong>Nivel ${stageState.level}/3</strong> · Ramos: ${currentCollected()}/3 · Total: ${stageState.flowers}<br><strong>${stageState.chosen}</strong> · ${escapeHtml(stageState.dedication)}`;
 }
 function update(dt,t){
@@ -176,9 +190,9 @@ function update(dt,t){
   if(!locked){
     dx=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0);
     dz=(key.has("s")||key.has("arrowdown")?1:0)-(key.has("w")||key.has("arrowup")?1:0);
-    if(dx||dz)autoWalk=false;
+    if(Math.hypot(joystick.x,joystick.y)>.04){dx=joystick.x;dz=joystick.y;}if(dx||dz)autoWalk=false;
     if(autoWalk){const tx=pos[partner].x-1.65,tz=pos[partner].z;dx=tx-pos[player].x;dz=tz-pos[player].z;if(Math.hypot(dx,dz)<.09){autoWalk=false;dx=dz=0}}
-    const l=Math.hypot(dx,dz);if(l){dx/=l;dz/=l;moving=true}
+    const l=Math.hypot(dx,dz);if(l){if(l>1||autoWalk){dx/=l;dz/=l}moving=true}
     // Keyboard directions are relative to the camera; scripted travel is in world space.
     if(!autoWalk){const yaw=engine.yaw,wx=dx*Math.cos(yaw)+dz*Math.sin(yaw);dz=-dx*Math.sin(yaw)+dz*Math.cos(yaw);dx=wx;}
     const nx=Math.max(-X_LIMIT,Math.min(X_LIMIT,pos[player].x+dx*3.7*dt));
@@ -219,6 +233,7 @@ function update(dt,t){
 }
 function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(rendererReady){update(dt,now/1000);engine.render(dt,now/1000,stageState,pos,player,partner)}requestAnimationFrame(loop)}
 window.__BUBU_DUDU_PAPER_DATE__={start,reset,menu:menuBack,giveFlowers,kiss,state:stageState,debugNear(){if(player&&partner){pos[player].x=pos[partner].x-1.55;pos[player].z=pos[partner].z+.18;face();}}};
+if(new URLSearchParams(location.search).has('test'))Object.assign(window.__BUBU_DUDU_PAPER_DATE__,{loadLevel,positions:pos,jump});
 function cameraButton(button,amount){
   if(!button)return;
   button.style.touchAction="none";button.style.userSelect="none";

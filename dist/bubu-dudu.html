@@ -133,7 +133,7 @@ h1{margin:0;font-size:clamp(34px,6vw,55px);letter-spacing:-2px}
 kbd{display:inline-block;padding:2px 6px;min-width:25px;border:1px solid #d9c4ca;border-radius:6px;background:#f1e5e8;box-shadow:0 2px 0 #ceb9c0;font-weight:900}
 
 #mobile{display:none;position:absolute;left:10px;right:10px;bottom:10px;justify-content:space-between;align-items:end;pointer-events:none;z-index:40}
-.joystick,.acts{pointer-events:auto}
+#joystick,.acts{pointer-events:auto}
 #joystick{position:relative;width:126px;height:126px;border:2px solid rgba(87,55,67,.24);border-radius:50%;background:radial-gradient(circle at 38% 32%,#fffdf6e8,#ead9bcdd);box-shadow:0 5px 0 rgba(87,55,67,.16),inset 0 0 0 10px #fff9e355;touch-action:none}
 #joystick:after{content:"";position:absolute;inset:26px;border:1px dashed #b79872aa;border-radius:50%;pointer-events:none}
 #joystickKnob{position:absolute;left:50%;top:50%;width:55px;height:55px;margin:-27.5px;border:2px solid #85634e;border-radius:50%;background:#f7dfb9;box-shadow:3px 4px 0 #85634e55;transform:translate(0,0);pointer-events:none}
@@ -225,6 +225,31 @@ button:focus-visible{outline:3px solid #b66176;outline-offset:5px}
 #cameraControls span{font-size:9px;letter-spacing:1px}#cameraControls button{border:0;background:#ebdcc0;font-size:21px;width:34px;height:31px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
 #hud{max-width:300px}#chapter{pointer-events:none}
 @media(max-width:700px){#scene3d{height:calc(100% - 110px)}#chapter{display:none}#cameraControls{top:142px;right:18px}#travel{top:145px;left:18px;transform:none;font-size:11px;padding:12px}#hud{max-width:calc(100% - 36px)}#prompt{bottom:210px}#music,#menuButton{bottom:165px}}
+
+/* The story moves from cold midnight through dawn into the unchanged garden. */
+body[data-chapter="1"] #app{background:linear-gradient(#101728,#273449 58%,#151d30)}
+body[data-chapter="2"] #app{background:linear-gradient(#42465e,#ac8890 56%,#697a79)}
+body[data-chapter="1"] .sun{background:#b6c9d8;border-color:#657b91;box-shadow:0 0 65px #a9c8df44;width:75px;height:75px}
+body[data-chapter="2"] .sun{background:#edc8a3;border-color:#c9a8a4;opacity:.7}
+body[data-chapter="1"] .cloud{background:#344255;border-color:#4b596e;opacity:.7}
+body[data-chapter="2"] .cloud{background:#8b8595;border-color:#afa1ac;opacity:.8}
+body[data-chapter="1"] #hillBack{background:#253146}body[data-chapter="1"] #hillFront{background:#1b273b}
+body[data-chapter="2"] #hillBack{background:#686879}body[data-chapter="2"] #hillFront{background:#566b70}
+body[data-chapter="1"] .paperUI,body[data-chapter="1"] #cameraControls{background:#263346;color:#e1e4ec;border-color:#7a8d9f;box-shadow:3px 5px #101c30}
+body[data-chapter="2"] .paperUI{background:#e0d9d1;border-color:#787581;box-shadow:3px 5px #535667}
+body[data-chapter="1"] #chapter{color:#c8d6e8}body[data-chapter="2"] #chapter{color:#eee0d0}
+body[data-chapter="1"] .petal{width:1px;height:24px;background:#c4d8ec55;border-radius:0}
+body[data-chapter="2"] .petal{background:#e6c79888}
+body[data-chapter="1"] #sky:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(105deg,transparent 0 65px,#b3c7e00b 66px 67px,transparent 68px 130px);pointer-events:none}
+@media(any-pointer:coarse){body.playing #mobile{display:flex}}
+
+body[data-chapter="1"] #cameraControls button{color:#293449;background:#c1cbd0}
+body[data-chapter="1"] #app:after{border-color:#798da255}
+body[data-chapter="1"] #sky:after{animation:rainDrift 1.4s linear infinite}
+@keyframes rainDrift{to{transform:translate(-30px,80px)}}
+@media(prefers-reduced-motion:reduce){body[data-chapter="1"] #sky:after{animation:none}}
+
+body[data-chapter="1"] #toast{background:#29384a;color:#efdbc0;border-color:#7b8f9f}
 </style>
 </head>
 <body>
@@ -373,10 +398,10 @@ button:focus-visible{outline:3px solid #b66176;outline-offset:5px}
 </div>
 
 <script>/* Shared identity and authored animation frames. No renderer or DOM dependency. */
-  function actorArt(name,view,action='idle',frame=0){
+  function actorArt(name,view,action='idle',frame=0,emotion='calm'){
     const panda=name==='Bubu',fur=panda?'#fffdf9':'#d9a181',dark='#503329',ear=panda?'#492d27':fur,cheek=panda?'#f4b0ae':'#f5ca80';
     const walk=action==='walk',phase=frame/8*Math.PI*2,step=walk?Math.sin(phase):0,bob=walk?Math.abs(Math.sin(phase))*4:0;
-    const giving=action==='give',receive=action==='receive',kissing=action==='kiss',happy=action==='happy';
+    const giving=action==='give',receive=action==='receive',kissing=action==='kiss',happy=action==='happy'||emotion==='happy';
     const arm=giving?frame/3:receive?1:0,lean=kissing?frame*2.5:0;
     const foot=(x,y,angle)=>`<g transform="rotate(${angle} ${x} ${y})"><ellipse cx="${x}" cy="${y}" rx="18" ry="12" fill="${panda?'#492d27':fur}"/></g>`;
     let body=`<g stroke="${dark}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(${lean} 130 270)">`;
@@ -408,10 +433,17 @@ button:focus-visible{outline:3px solid #b66176;outline-offset:5px}
       if(view==='back')body+=`<circle cx="130" cy="246" r="12" fill="${panda?'#492d27':fur}"/>`;
       if(view!=='back')body+=`<g data-part="arm" transform="rotate(${step*12} 83 219)"><path d="M83 219Q104 222 101 234Q96 242 80 236" fill="${fur}"/></g><g data-part="arm" transform="rotate(${-step*12} 177 219)"><path d="M177 219Q156 222 159 234Q164 242 180 236" fill="${fur}"/></g>`;
     }
+    if(view!=='back'&&(emotion==='crying'||emotion==='sad')){
+      const side=view==='side',eyes=side?[122,188]:[91,168],mouth=side?158:130;
+      body=body.replace('<path d="M148 163q5 8 11 1q6 7 11 -1" fill="none" stroke-width="3.5"/>',`<path d="M148 170q11 -10 22 0" fill="none" stroke-width="3.5"/>`).replace('<path d="M119 162Q123 170 130 163Q137 170 141 162" fill="none" stroke-width="3.5"/>','<path d="M119 171Q130 160 141 171" fill="none" stroke-width="3.5"/>');
+      body+=`<g data-emotion="${emotion}" transform="translate(0 ${-bob})" stroke-width="3" fill="none"><path d="M${eyes[0]-10} 141l15 -5M${eyes[1]-5} 136l15 5" stroke="${dark}"/>`;
+      for(const [i,x] of eyes.entries())if(emotion==='crying'||i===0){const y=167+(frame%4)*3;body+=`<path d="M${x} ${y}q-12 17 -7 24q7 9 14 0q5 -7 -7 -24Z" fill="#9fdcec" stroke="#6ca4c2"/><path d="M${x-3} ${y+13}v7" stroke="#e4f8ff"/>`;}
+      body+='</g>';
+    }
     return body+'</g>';
   }
 
-const PaperCharacters={svg:actorArt};
+const PaperCharacters={svg:actorArt,emotion(level,flowers=0){return level===3||flowers>=5?'happy':level===2?'calm':flowers===0?'crying':flowers<3?'sad':'calm'}};
 </script>
 <script>/* Pure state-to-pose mapping. Facing is relative to the perspective camera. */
 const PaperAnimation = {
@@ -451,53 +483,23 @@ const PaperWorld=(()=>{
 
  const floor=(id,x,y,z,w,h,d,color)=>({id,x,y,z,w,h,d,color,top:y+h});
  const LEVELS={
-  1:{
-   id:1,name:'La pradera de papel',chapter:'CAPÍTULO 01',start:{x:-3.5,z:7},goal:{x:7,z:-7},
-   floors:[
-    floor('l1-ground',0,-.12,0,20,.15,21.7,'#9fbe83'),
-    floor('l1-step-a',-5,.03,1.35,3.7,.12,.70,'#d7af80'),floor('l1-step-b',-5,.15,1.85,3.7,.12,.70,'#e8c999'),
-    floor('l1-platform-a',-5,.27,2.8,4.1,.16,2.45,'#e8c895'),
-    floor('l1-step-c',0,.03,-.3,3.0,.12,.70,'#d7af80'),floor('l1-step-d',0,.15,-.8,3.0,.12,.70,'#e8c999'),
-    floor('l1-platform-b',0,.27,-1.45,3.7,.18,2.25,'#dcb783'),
-    floor('l1-platform-c',5,.22,-5.0,3.7,.16,2.4,'#efd39f'),
-    floor('l1-bridge-a',-1.0,.27,5.3,3.0,.16,.72,'#e7c895'),floor('l1-bridge-b',2.0,.30,.3,3.0,.16,.72,'#e7c895'),floor('l1-bridge-c',4.0,.27,-3.5,3.0,.16,.72,'#e7c895')
-   ],
-   gaps:[{id:'l1-gap-a',x:0,z:5.3,w:19,d:1.15},{id:'l1-gap-b',x:0,z:.3,w:19,d:1.15},{id:'l1-gap-c',x:0,z:-3.5,w:19,d:1.15}],
-   obstacles:[
-    {id:'l1-crate-a',x:-1.9,z:4.5,w:1.0,d:1.0,y:.03,h:.72,color:'#a86f4d',kind:'crate'},
-    {id:'l1-crate-b',x:2.9,z:1.5,w:1.2,d:1.2,y:.03,h:.82,color:'#b47e53',kind:'crate'},
-    {id:'l1-rock',x:6.3,z:1.7,w:1.1,d:.9,y:.03,h:.55,color:'#8f6b78',kind:'rock'}
-   ],
-   hazards:[{id:'l1-thorns',x:-2.8,z:-4.1,w:1.8,d:1.0},{id:'l1-thorns-b',x:3.0,z:-3.3,w:1.7,d:.9}],
-   flowers:[{id:'l1-flower-a',x:-6.3,z:3.2},{id:'l1-flower-b',x:.1,z:-1.3},{id:'l1-flower-c',x:5.6,z:-5.0}],
-   mobs:[{id:'l1-slime-a',x:-2.8,z:6,axis:'x',range:2.0,speed:1.1},{id:'l1-slime-b',x:4.4,z:-1.0,axis:'z',range:1.7,speed:1.35}]
-  },
-  2:{
-   id:2,name:'El bosque de cartulina',chapter:'CAPÍTULO 02',start:{x:-3.5,z:7},goal:{x:7,z:-7},
-   floors:[
-    floor('l2-ground',0,-.12,0,20,.15,21.7,'#89ad83'),
-    floor('l2-island-a',-5,.35,4.0,3.8,.18,2.4,'#cda97e'),floor('l2-island-b',-1,.70,1.0,3.0,.18,2.1,'#e4c08e'),
-    floor('l2-island-c',3,.38,-2.0,3.5,.18,2.0,'#d3ad7c'),floor('l2-island-d',6,.72,-5.5,3.0,.18,2.2,'#efd49f'),
-    floor('l2-step-a',-3,.03,2.7,1.0,.15,.65,'#d2aa78'),floor('l2-step-b',-2.2,.18,2.0,1.0,.15,.65,'#e4c28e'),
-    floor('l2-step-c',1,.03,-.8,1.0,.15,.65,'#d2aa78'),floor('l2-step-d',1.8,.18,-1.4,1.0,.15,.65,'#e4c28e'),
-    floor('l2-step-e',4.5,.03,-4.2,1.0,.15,.65,'#d2aa78'),floor('l2-step-f',5.3,.18,-4.8,1.0,.15,.65,'#e4c28e'),
-    floor('l2-bridge-a',-3.5,.46,5.3,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-b',-.2,.72,1.8,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-c',2.7,.46,-1.4,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-d',5.0,.72,-4.5,3.0,.18,.72,'#e4c08e')
-   ],
-   gaps:[{id:'l2-gap-a',x:0,z:5.3,w:19,d:1.15},{id:'l2-gap-b',x:0,z:1.8,w:19,d:1.15},{id:'l2-gap-c',x:0,z:-1.4,w:19,d:1.15},{id:'l2-gap-d',x:0,z:-4.5,w:19,d:1.15}],
-   obstacles:[
-    {id:'l2-log-a',x:-6.4,z:-1.8,w:2.2,d:.75,y:.03,h:.75,color:'#866048',kind:'log'},
-    {id:'l2-crate-a',x:1.3,z:4.4,w:1.2,d:1.2,y:.03,h:.95,color:'#9c674a',kind:'crate'},
-    {id:'l2-rock-a',x:-4.0,z:-4.0,w:1.4,d:1.2,y:.03,h:.65,color:'#766b7f',kind:'rock'}
-   ],
-   hazards:[{id:'l2-thorns-a',x:-.1,z:4.0,w:1.6,d:.9},{id:'l2-thorns-b',x:3.7,z:1.4,w:1.8,d:.8},{id:'l2-thorns-c',x:6.0,z:-1.7,w:1.4,d:.9}],
-   flowers:[{id:'l2-flower-a',x:-5.0,z:4.0},{id:'l2-flower-b',x:-1.0,z:1.0},{id:'l2-flower-c',x:6.0,z:-5.5}],
-   mobs:[{id:'l2-slime-a',x:-6.2,z:5.8,axis:'x',range:1.8,speed:1.45},{id:'l2-slime-b',x:2.2,z:-5.8,axis:'z',range:2.1,speed:1.7},{id:'l2-slime-c',x:5.2,z:2.5,axis:'x',range:1.5,speed:1.25}]
-  },
   3:{
    id:3,name:'El jardín de los encuentros',chapter:'CAPÍTULO 03 · FINAL',start:{x:-.8,z:3},goal:{x:1,z:-5.7},
    floors:gardenFloors,gaps:[],obstacles:[],hazards:[],mobs:[],flowers:[],giftSpots:[{x:-2.8,z:4.8},{x:2.2,z:3.8},{x:4.7,z:-1.2}]
   }
  };
+ // Floating stepping stones: no invisible walkable meadow under the route.
+ const routes={1:[[-3,7],[-4,4.5],[-2,2],[0,-.5],[2,-3],[4,-5.5],[3,-8]],2:[[-3,7],[-1,4.5],[1,2],[-1,-.5],[1,-3],[3,-5.5],[3,-8]]};
+ for(const id of [1,2]){
+  const route=routes[id],dark=id===1;
+  const platforms=route.map(([x,z],i)=>floor(`l${id}-island-${i}`,x,-.35+(i%2)*.12,z,i===0||i===6?3.4:(id===1?3:2.7),.5,i===0||i===6?2.1:1.65,dark?'#687788':'#8b9988'));
+  LEVELS[id]={id,name:dark?'El valle de las cartas perdidas':'El bosque del primer amanecer',chapter:`CAPÍTULO 0${id}`,start:{x:route[0][0],z:route[0][1]},goal:{x:route[6][0],z:route[6][1]},floors:platforms,
+   gaps:route.slice(0,-1).map(([x,z],i)=>({id:`abyss-${i}`,x:0,z:z-1.25,w:20,d:.6})),
+   obstacles:[{id:`l${id}-fallen-log`,x:route[2][0]+.7,z:route[2][1],w:.5,d:1.1,y:.15,h:.65,color:dark?'#454659':'#6a645f',kind:'log'}],
+   hazards:[{id:'brambles-a',x:route[3][0]-.95,z:route[3][1],w:.45,d:1.2},{id:'brambles-b',x:route[5][0]+.95,z:route[5][1],w:.45,d:1.2}],
+   flowers:[1,3,5].map((i,k)=>({id:`l${id}-flower-${k}`,x:route[i][0],z:route[i][1]-.2})),
+   mobs:[2,4,5].map((i,k)=>({id:`l${id}-warden-${k}`,x:route[i][0]-.5,z:route[i][1],axis:'x',range:.65,speed:dark?1.5:2,arena:platforms[i],windup:dark?.85:.6,recovery:dark?1.5:1.1})),route};
+ }
  let activeId=3,activeFloors=gardenFloors;
  const radius=.24,maxStep=.23;
  function setLevel(id){activeId=Number(id);if(!LEVELS[activeId])throw Error(`Nivel inexistente: ${id}`);activeFloors=LEVELS[activeId].floors;return LEVELS[activeId]}
@@ -607,10 +609,33 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
   for(const id of [1,2]){
     const levelGeometry=[];const chapter=PaperWorld.level(id);
     for(const f of chapter.floors)box(levelGeometry,f.x,f.y,f.z,f.w,f.h,f.d,f.color);
-    for(const g of (chapter.gaps||[]))box(levelGeometry,g.x,-.28,g.z,g.w,.08,g.d,'#7f8798');
-    for(const o of chapter.obstacles)box(levelGeometry,o.x,o.y,o.z,o.w,o.h,o.d,o.color);
-    for(const h of chapter.hazards){box(levelGeometry,h.x,.03,h.z,h.w,.10,h.d,'#c96d7f');box(levelGeometry,h.x,.14,h.z,h.w*.72,.05,h.d*.72,'#f1b2a7');}
-    const g=chapter.goal;box(levelGeometry,g.x,.03,g.z,2.5,.13,2.5,'#e7c895');
+    // Deep water is scenery only; the stepping stones are the only collision floors.
+    box(levelGeometry,0,-2.2,0,22,.12,24,id===1?'#17273c':'#4f6974');
+    for(const f of chapter.floors){
+      box(levelGeometry,f.x,-1.65,f.z,f.w*.83,1.5,f.d*.85,id===1?'#354258':'#626f73');
+      box(levelGeometry,f.x,f.top+.006,f.z,f.w-.15,.025,.10,id===1?'#a2b0b9':'#ccd0b2');
+      for(let n=0;n<5;n++)box(levelGeometry,f.x-f.w/2+.2+n*.5,f.top+.01,f.z+.3,.23,.015,.05,id===1?'#83909c':'#b2b99d');
+      for(let n=0;n<9;n++){
+        const xx=f.x-f.w/2+.22+(n*1.73%1)*(f.w-.44),zz=f.z-f.d/2+.15+(n*.37%1)*(f.d-.3);
+        disk(levelGeometry,xx,f.top+.032,zz,.06,.09,color(id===1?'#8b9aa7':'#bec29c'),5);
+      }
+      for(let n=0;n<3;n++)box(levelGeometry,f.x,-.25-n*.34,f.z,f.w-.06,.035,f.d-.06,id===1?'#536076':'#7a867f');
+      const lx=f.x-f.w/2+.12,lz=f.z-.5;
+      box(levelGeometry,lx,f.top,lz,.08,.85,.08,'#454453');
+      box(levelGeometry,lx,f.top+.72,lz,.24,.26,.24,id===1?'#d2bf86':'#f4d39a');
+      box(levelGeometry,lx,f.top+1,lz,.34,.08,.34,'#424654');
+    }
+    for(const o of chapter.obstacles){box(levelGeometry,o.x,o.y,o.z,o.w,o.h,o.d,o.color);box(levelGeometry,o.x,o.y+o.h,o.z,o.w+.1,.06,o.d+.1,'#a3a09a');}
+    for(const h of chapter.hazards){for(let i=0;i<5;i++){const z=h.z-h.d/2+i*h.d/4;const x=h.x,y=.17;for(const [a,b] of [[[-.14,-.12],[.14,-.12]],[[.14,-.12],[.14,.12]],[[.14,.12],[-.14,.12]],[[-.14,.12],[-.14,-.12]]])tri(levelGeometry,[x+a[0],y,z+a[1]],[x+b[0],y,z+b[1]],[x,y+.48,z],color('#958399'));}}
+    // Broken stone arches and layered cliffs surround, rather than hide, the route.
+    for(const side of [-1,1])for(let i=0;i<7;i++){
+      const x=side*(7.3+(i%2)*.8),z=8-i*2.8;
+      box(levelGeometry,x,-1.8,z,1.4,1.6+(i%3)*.4,2,id===1?'#29364c':'#596771');
+      if(i%3===0){box(levelGeometry,x,.1,z,.35,2.1,.38,id===1?'#566075':'#929391');box(levelGeometry,x+side*.4,2,z,.95,.25,.5,id===1?'#626d80':'#a5a293');}
+    }
+    const g=chapter.goal;
+    for(const side of [-1,1])box(levelGeometry,g.x+side*1.1,.15,g.z,.23,2.8,.3,id===1?'#8b9f9e':'#c6baa0');
+    box(levelGeometry,g.x,2.95,g.z,2.5,.23,.4,id===1?'#a6b6ac':'#e5cda5');
     levelScenes.set(id,makeBuffer(levelGeometry));
   }
 
@@ -629,11 +654,18 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
   const actorArt=PaperCharacters.svg;
   for(const name of ['Bubu','Dudu']){
     for(const view of ['front','side','back']){svgTexture(`${name}:${view}:idle:0`,actorArt(name,view));for(let f=0;f<8;f++)svgTexture(`${name}:${view}:walk:${f}`,actorArt(name,view,'walk',f));}
+    for(const mood of ['crying','sad','happy'])for(const view of ['front','side','back']){
+      for(let f=0;f<4;f++)svgTexture(`${name}:${view}:idle:${f}:${mood}`,actorArt(name,view,'idle',f,mood));
+      for(let f=0;f<8;f++)svgTexture(`${name}:${view}:walk:${f}:${mood}`,actorArt(name,view,'walk',f,mood));
+    }
     for(const action of ['give','receive','kiss'])for(let f=0;f<4;f++)svgTexture(`${name}:side:${action}:${f}`,actorArt(name,'side',action,f));
     svgTexture(`${name}:front:happy:0`,actorArt(name,'front','happy'));
   }
   svgTexture('heart','<path d="M50 85C-18 38 15 0 50 29C85 0 118 38 50 85Z" fill="#dd7388" stroke="#914e60" stroke-width="4"/>','-5 -5 110 105');
 
+  svgTexture('warden','<path d="M24 77L12 22 43 38Q70 17 96 38L125 19 113 74Q137 115 115 137Q67 161 22 135Q4 112 24 77Z" fill="#686079" stroke="#d5bac5" stroke-width="4"/><path d="M36 67L57 77M99 67L78 77" stroke="#261f39" stroke-width="7"/><path d="M51 111Q69 94 87 111" fill="none" stroke="#29283f" stroke-width="5"/><ellipse cx="42" cy="87" rx="6" ry="8" fill="#f0bf89"/><ellipse cx="93" cy="87" rx="6" ry="8" fill="#f0bf89"/>','0 0 140 165',false);
+  svgTexture('deadTree','<path d="M112 290L126 175 76 131 38 61 54 52 96 110 126 123 116 36 133 10 147 97 184 57 213 48 193 78 148 133 155 190 202 150 230 144 204 175 154 222 152 290Z" fill="#414659" stroke="#8894a3" stroke-width="4"/><path d="M130 276L139 159M137 139L128 61" stroke="#a2a3a5" stroke-width="3"/>','0 0 260 300',false);
+  svgTexture('dawnTree','<path d="M112 290L126 175 76 131 38 61 54 52 96 110 126 123 116 36 133 10 147 97 184 57 213 48 193 78 148 133 155 190 202 150 230 144 204 175 154 222 152 290Z" fill="#686477" stroke="#aaa1a7" stroke-width="4"/><path d="M65 97Q15 44 65 43Q96 57 65 97M175 96Q159 38 207 35Q231 63 175 96M192 178Q177 126 230 124Q248 156 192 178" fill="#8b9c92" stroke="#bbc5ac" stroke-width="4"/>','0 0 260 300',false);
   const decorations=[];
   function prop(id,x,z,w,h,y=0){decorations.push({id,x,z,w,h,y});}
   [[-8,-7],[8,-7],[-8,0],[8,0],[-8,7],[8,7],[-5,-10],[5,-10]].forEach((p,i)=>prop(i%3===0?'blossomCut':'treeCut',...p,3.3,4.8));
@@ -660,33 +692,37 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
     const width=canvas.clientWidth,height=canvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);
     if(canvas.width!==Math.round(width*dpr)||canvas.height!==Math.round(height*dpr)){canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);gl.viewport(0,0,canvas.width,canvas.height);}
     const pair=state.mode==='flowers'||state.mode==='kiss',p=player?positions[player]:{x:0,z:-2};
-    const wanted=pair?[(positions.Bubu.x+positions.Dudu.x)/2,1.5,(positions.Bubu.z+positions.Dudu.z)/2]:[p.x*.40,1.25,p.z*.50-1.7];
+    const platformChapter=state.mode!=='menu'&&state.level<3;
+    const wanted=platformChapter?[p.x*.65,.6,p.z*.6-1.5]:pair?[(positions.Bubu.x+positions.Dudu.x)/2,1.5,(positions.Bubu.z+positions.Dudu.z)/2]:[p.x*.40,1.25,p.z*.50-1.7];
     const blend=1-Math.exp(-dt*3);focus=focus.map((v,i)=>v+(wanted[i]-v)*blend);yaw+=(targetYaw-yaw)*blend;
     cameraZoom+=((pair?0.72:1)-cameraZoom)*blend;
-    const distance=(width<600?19:21)*cameraZoom,vertical=distance*.32;
+    const distance=(platformChapter?(width<600?23:22):(width<600?19:21))*cameraZoom,vertical=distance*(platformChapter?.43:.32);
     const eye=[focus[0]+Math.sin(yaw)*distance,focus[1]+vertical,focus[2]+Math.cos(yaw)*distance];
     vp=multiply(perspective(Math.PI/4.7,width/height,.1,120),lookAt(eye,focus));gl.uniformMatrix4fv(locations.vp,false,vp);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-    const level=state.level||3,scene=level===3?gardenScene:(levelScenes.get(level)||gardenScene);
+    const level=state.mode==='menu'?3:(state.level||3),scene=level===3?gardenScene:(levelScenes.get(level)||gardenScene);
     drawBuffer(scene);
     // Contact shadows remain on the geometry, independent of sprite orientation.
     const actorNames=level===3?['Bubu','Dudu']:(player?[player]:[]);
-    const shadow=[];for(const name of actorNames){const p=positions[name];disk(shadow,p.x,heightAt(p.x,p.z)+.012,p.z,.70,.30,color('#574532',1,.23));}
+    const shadow=[];for(const name of actorNames){const p=positions[name];if(!Number.isFinite(heightAt(p.x,p.z)))continue;disk(shadow,p.x,heightAt(p.x,p.z)+.012,p.z,.70,.30,color('#574532',1,.23));}
     gl.depthMask(false);draw(shadow);gl.depthMask(true);
     if(level===3){for(const o of decorations)billboard(textures.get(o.id),o.x,o.y,o.z,o.w,o.h,false,0);billboard(textures.get('butterflyCut'),-3,1.8+(reducedMotion?0:Math.sin(t*2)*.25),1,.6,.53,false,yaw,reducedMotion?0:Math.sin(t*4)*.12);}
     else {
       const chapter=PaperWorld.level(level),goal=chapter.goal;
+      for(const side of [-1,1])for(let i=0;i<8;i++)billboard(textures.get(level===1?'deadTree':'dawnTree'),side*(6.8+(i%2)*1.2),-.1,8-i*2.6,2.5,3.2+(i%3)*.5,false,yaw);
       billboard(textures.get('signCut'),goal.x,1.05,goal.z,1.45,1.05,false,yaw);
-      for(const m of (state.mobs||[])){const bob=reducedMotion?0:Math.sin(t*5+m.phase)*.07;billboard(textures.get('hostileCut'),m.x,heightAt(m.x,m.z)+.06+bob,m.z,.92,.86,m.flip,yaw);}
+      for(const m of (state.mobs||[])){const bob=reducedMotion?0:Math.sin(t*(m.mode==='windup'?22:5)+m.phase)*.07;const warning=[];if(m.mode==='windup'||m.mode==='stunned'){disk(warning,m.x,heightAt(m.x,m.z)+.03,m.z,m.mode==='windup'?1.1:.55,.45,color(m.mode==='windup'?'#ef8972':'#e8cf8c',1,.7));draw(warning);}billboard(textures.get('warden'),m.x,heightAt(m.x,m.z)+.06+bob,m.z,1.08,m.mode==='stunned'?.38:1.02,m.flip,yaw);}
       for(const flower of chapter.flowers)if(!(state.collected||[]).includes(flower.id))billboard(textures.get('bouquetCut'),flower.x,heightAt(flower.x,flower.z)+.08,flower.z,.62,.82,false,yaw,-.08);
     }
     stats={};
     for(const name of actorNames){
       const p=positions[name];
       const {view,flip,action,frame,key}=PaperAnimation.pose(name,p,positions,state,player,partner,yaw);
-      const texture=textures.get(key),bounce=reducedMotion?0:p.moving?Math.abs(Math.sin((p.walkTime||0)*11*Math.PI/4))*.075:Math.sin(t*2)*.018;
+      const mood=state.mode==='menu'?'calm':PaperCharacters.emotion(level,state.flowers||0);const emotionalKey=action==='idle'&&mood!=='calm'?`${name}:${view}:idle:${reducedMotion?0:Math.floor(t*5)%4}:${mood}`:action==='walk'&&mood!=='calm'?`${key}:${mood}`:key;
+      const texture=textures.get(emotionalKey)||textures.get(key),bounce=reducedMotion?0:p.moving?Math.abs(Math.sin((p.walkTime||0)*11*Math.PI/4))*.075:Math.sin(t*2)*.018;
       const turn=p.turnT>0?Math.max(.15,Math.abs(Math.cos(p.turnT/.18*Math.PI))):1;
-      billboard(texture,p.x,heightAt(p.x,p.z)+(p.jumpY||0)+bounce-.10,p.z,2.35,2.72,flip,yaw,0,turn);
-      stats[name]={view,action,frame,flip,x:+p.x.toFixed(2),z:+p.z.toFixed(2)};
+      const renderedY=((p.jumpY||0)>0?(p.jumpBase??.15):heightAt(p.x,p.z))+(p.jumpY||0)+bounce-.10;
+      billboard(texture,p.x,renderedY,p.z,2.35,2.72,flip,yaw,0,turn);
+      stats[name]={view,action,frame,flip,emotion:mood,y:renderedY,x:+p.x.toFixed(2),z:+p.z.toFixed(2)};
     }
     if(['flowers','ready','kiss','done'].includes(state.mode)&&player){
       const a=positions[player],b=positions[partner];let x=b.x+(a.x<b.x?-.61:.61),z=b.z+.13,y=heightAt(b.x,b.z)+.7;
@@ -750,12 +786,12 @@ function currentCollected(){const ids=currentChapter().flowers||[];return ids.fi
 function updateChapterUi(){const c=currentChapter();chapter.innerHTML=`${c.chapter}<b>${c.name}</b>`;const count=stageState.level<3?`${currentCollected()}/3`:`${stageState.flowers-stageState.gifted}/${stageState.flowers}`;hud.innerHTML=`<strong>Nivel ${stageState.level}/3</strong> · Ramos: ${count}<br><strong>${stageState.chosen||"Bubu"}</strong> · ${escapeHtml(stageState.dedication||"Para Bettina, con todo mi amor 💗")}`}
 function resetActorState(p){p.moving=false;p.walkTime=0;p.turnT=0;p.heading=0;p.jumpY=0;p.jumpV=0}
 function loadLevel(levelNumber){
-  const c=PaperWorld.setLevel(levelNumber);stageState.level=levelNumber;stageState.eventT=0;stageState.hitCooldown=0;stageState.giftSpots=c.giftSpots||[];joystick.x=joystick.y=0;document.querySelector("#joystickKnob")?.style.setProperty("transform","translate(0,0)");
+  document.body.dataset.chapter=String(levelNumber);stageState.checkpoint=null;const c=PaperWorld.setLevel(levelNumber);stageState.level=levelNumber;stageState.eventT=0;stageState.hitCooldown=0;stageState.giftSpots=c.giftSpots||[];joystick.x=joystick.y=0;document.querySelector("#joystickKnob")?.style.setProperty("transform","translate(0,0)");
   stageState.mobs=(c.mobs||[]).map((m,i)=>({...m,baseX:m.x,baseZ:m.z,phase:i*.9,flip:false}));
   const start=c.start;Object.assign(pos[player],{x:start.x,z:start.z,flip:false,heading:Math.PI});
   Object.assign(pos[partner],{x:c.goal.x,z:c.goal.z,flip:true,heading:0});
   for(const p of Object.values(pos))resetActorState(p);
-  pos[player].heading=Math.PI;pos[partner].heading=0;
+  pos[player].heading=0;pos[partner].heading=0;
   updateChapterUi();
   if(levelNumber===3){stageState.mode="approach";quest.innerHTML='<span class="q on" data-q="approach">1 · ACERCATE</span><span class="q" data-q="flowers">2 · FLORES</span><span class="q" data-q="kiss">3 · BESO</span>';quest.style.display="flex";setQuest("approach");setPrompt(stageState.flowers>stageState.gifted?`Acercate a ${partner} · elegí un ramo 🌷`:`Acercate a ${partner} · ya no quedan ramos`);$("#travel").style.display="block";$("#travel").textContent="Seguir el caminito →"}
   else {stageState.mode="platform";quest.innerHTML=`<span class="q on">NIVEL ${levelNumber}/3</span><span class="q">RAMOS ${currentCollected()}/3</span><span class="q">META</span>`;quest.style.display="flex";setPrompt(`Nivel ${levelNumber}: juntá los 3 ramos y llegá a la bandera 🌷`);$("#travel").style.display="none";$("#travel").textContent=`Entrar al nivel ${levelNumber+1} →`}
@@ -770,7 +806,7 @@ function start(name){
 $("#chooseBubu").onclick=()=>start("Bubu");$("#chooseDudu").onclick=()=>start("Dudu");
 
 function reset(){ if(!stageState.chosen){menu.style.display="flex";return} start(stageState.chosen) }
-function menuBack(){key.clear();joystick.x=joystick.y=0;autoWalk=false;PaperWorld.setLevel(3);document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
+function menuBack(){key.clear();joystick.x=joystick.y=0;autoWalk=false;PaperWorld.setLevel(3);delete document.body.dataset.chapter;document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
 
 function hearts(n=18){
   if(reducedMotion)return;
@@ -798,7 +834,7 @@ function kiss(){
 let ac=null,musicTimer=null,note=0;const melody=[523.25,659.25,783.99,659.25,587.33,698.46,783.99,880,783.99,659.25,587.33,523.25];
 function audio(){try{ac||=new (window.AudioContext||window.webkitAudioContext)();ac.resume?.();return ac}catch{return null}}
 function tone(f,d=.18,v=.025,delay=0,type="sine"){if(!stageState.music)return;const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+delay;o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.03)}
-function startMusic(){audio();if(musicTimer)return;musicTimer=setInterval(()=>{if(!stageState.music||stageState.mode==="menu")return;const n=melody[note++%melody.length];tone(n,.3,.012);tone(n/2,.38,.006,.02,"triangle")},440)}
+function startMusic(){audio();if(musicTimer)return;musicTimer=setInterval(()=>{if(!stageState.music||stageState.mode==="menu")return;const tune=stageState.level===1?[220,261.63,293.66,261.63,196,233.08,220,174.61]:stageState.level===2?[293.66,349.23,440,392,349.23,329.63,293.66,261.63]:melody;const n=tune[note++%tune.length];tone(n,.3,.012);tone(n/2,.38,.006,.02,"triangle")},440)}
 function flowerChime(){tone(659,.17,.045);tone(784,.2,.042,.1);tone(988,.3,.038,.2)}
 function kissChime(){tone(784,.14,.045);tone(1047,.18,.04,.08);tone(1319,.25,.035,.16)}
 $("#music").onclick=()=>{stageState.music=!stageState.music;$("#music").textContent=`♫ Música: ${stageState.music?"sí":"no"}`;if(stageState.music){audio();startMusic()}};
@@ -824,7 +860,7 @@ $("#menuButton").onclick=menuBack;
 function advanceLevel(){if(stageState.level>=3)return;if(currentCollected()<3){setPrompt(`Todavía faltan ${3-currentCollected()} ramos en este nivel 🌷`,true);return}loadLevel(stageState.level+1);hearts(12);}
 function jump(){
   if(stageState.level>=3||!player||stageState.mode!=="platform"||(pos[player].jumpY||0)>0.02)return;
-  pos[player].jumpV=5.0;pos[player].jumpY=.03;setPrompt("¡Saltá para pasar los obstáculos!",true);
+  pos[player].jumpBase=PaperWorld.supportAt(pos[player].x,pos[player].z);pos[player].jumpV=5.0;pos[player].jumpY=.03;setPrompt("¡Saltá para pasar los obstáculos!",true);
 }
 $("#travel").onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.level===3)autoWalk=true};
 prompt.onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.mode==="approach"||stageState.mode==="ready"||stageState.mode==="done")giveFlowers();else kiss()};
@@ -841,23 +877,36 @@ document.addEventListener("pointerup",e=>{if(e.pointerId===joystickPointer)relea
 document.addEventListener("pointercancel",e=>{if(e.pointerId===joystickPointer)releaseJoystick()},{capture:true});
 function findTouch(list,id){if(!list)return null;for(let i=0;i<list.length;i++){const p=list[i];if(id===undefined||p.identifier===id)return p}return null}
 function touchPoint(e,id){const p=findTouch(e.changedTouches,id)||findTouch(e.touches,id);return p?{clientX:p.clientX,clientY:p.clientY}:null}
+if(!window.PointerEvent){
 document.addEventListener("touchstart",e=>{if(joystickPointer!==null){e.preventDefault();return}if(!e.target.closest?.("#joystick"))return;const p=e.changedTouches?.[0];if(!p)return;e.preventDefault();touchJoystick=true;touchJoystickId=p.identifier;updateJoystick({clientX:p.clientX,clientY:p.clientY})},{capture:true,passive:false});
 document.addEventListener("touchmove",e=>{if(joystickPointer!==null){e.preventDefault();return}if(!touchJoystick)return;const p=touchPoint(e,touchJoystickId);if(!p)return;e.preventDefault();updateJoystick(p)},{capture:true,passive:false});
 document.addEventListener("touchend",e=>{if(!touchJoystick||!findTouch(e.changedTouches,touchJoystickId))return;e.preventDefault();touchJoystick=false;touchJoystickId=null;releaseJoystick()},{capture:true,passive:false});
 document.addEventListener("touchcancel",e=>{if(joystickPointer!==null){e.preventDefault();return}releaseJoystick()},{capture:true,passive:false});
+}
 function mobileAction(selector,action){const b=$(selector);if(!b)return;let touchedAt=0;b.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"&&e.pointerType!=="pen")return;e.preventDefault();b.setPointerCapture?.(e.pointerId);touchedAt=performance.now();action()},{passive:false});b.addEventListener("click",e=>{if(performance.now()-touchedAt<600){e.preventDefault();return}action()},{passive:false});}
 mobileAction('[data-action="flowers"]',giveFlowers);mobileAction('[data-action="kiss"]',kiss);mobileAction('[data-action="jump"]',jump);
 
 let last=performance.now(),petalT=0;
-function updateMobs(t){
-  for(const m of stageState.mobs){const previous=m.axis==="x"?m.x:m.z,offset=Math.sin(t*m.speed+m.phase)*m.range;if(m.axis==="x")m.x=m.baseX+offset;else m.z=m.baseZ+offset;m.flip=previous>(m.axis==="x"?m.x:m.z)}
+function updateMobs(dt,t){
+ for(const m of stageState.mobs){
+  m.timer=Math.max(0,(m.timer||0)-dt);const a=m.arena,p=pos[player];
+  if(m.mode==='stunned'){if(!m.timer)m.mode='patrol';continue}
+  if(m.mode==='windup'&&!m.timer){m.mode='charge';m.timer=.38;const d=Math.hypot(p.x-m.x,p.z-m.z)||1;m.vx=(p.x-m.x)/d;m.vz=(p.z-m.z)/d;}
+  else if(m.mode==='charge'){m.x+=m.vx*5.4*dt;m.z+=m.vz*5.4*dt;if(!m.timer){m.mode='recover';m.timer=m.recovery}}
+  else if(m.mode==='recover'){if(!m.timer)m.mode='patrol'}
+  else if(m.mode!=='windup'){
+   m.mode='patrol';m.x=m.baseX+Math.sin(t*m.speed+m.phase)*m.range;
+   if(Math.hypot(p.x-m.x,p.z-m.z)<3.4){m.mode='windup';m.timer=m.windup}
+  }
+  m.x=Math.max(a.x-a.w/2+.35,Math.min(a.x+a.w/2-.35,m.x));m.z=Math.max(a.z-a.d/2+.3,Math.min(a.z+a.d/2-.3,m.z));m.flip=p.x<m.x;
+ }
 }
-function respawn(){const c=currentChapter();Object.assign(pos[player],{x:c.start.x,z:c.start.z,jumpY:0,jumpV:0});pos[player].moving=false;stageState.hitCooldown=.8;setPrompt("¡Cuidado con los enemigos y los huecos! Volviste al inicio.",true);hearts(8)}
+function respawn(){const c=currentChapter(),checkpoint=stageState.checkpoint||c.start;Object.assign(pos[player],{x:checkpoint.x,z:checkpoint.z,jumpY:0,jumpV:0});pos[player].moving=false;stageState.hitCooldown=1.4;toast.textContent=stageState.checkpoint?'De vuelta al último ramo':'Intentá de nuevo · esperá el momento';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1300);}
 function collectNearbyFlowers(){
-  const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
+  const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){stageState.checkpoint={x:f.x,z:f.z};stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
 }
 function updatePlatform(dt,t){
-  stageState.hitCooldown=Math.max(0,stageState.hitCooldown-dt);updateMobs(t);
+  stageState.hitCooldown=Math.max(0,stageState.hitCooldown-dt);updateMobs(dt,t);
   const actor=pos[player];if(actor.jumpY>0||actor.jumpV>0){actor.jumpY+=actor.jumpV*dt;actor.jumpV-=13.5*dt;if(actor.jumpY<=0){actor.jumpY=0;actor.jumpV=0;}}
   const keyboardX=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0),keyboardZ=(key.has("s")||key.has("arrowdown")?1:0)-(key.has("w")||key.has("arrowup")?1:0),analog=Math.hypot(joystick.x,joystick.y)>.04;
   let dx=analog?joystick.x:keyboardX,dz=analog?joystick.y:keyboardZ,moving=false;
@@ -865,10 +914,11 @@ function updatePlatform(dt,t){
   const previous={x:pos[player].x,z:pos[player].z},nx=Math.max(-X_LIMIT,Math.min(X_LIMIT,pos[player].x+dx*3.7*dt)),nz=Math.max(Z_MIN,Math.min(Z_MAX,pos[player].z+dz*3.7*dt));Object.assign(pos[player],engine.move(pos[player],nx,nz));
   moving=Math.hypot(pos[player].x-previous.x,pos[player].z-previous.z)>.0001;pos[player].moving=moving;pos[partner].moving=false;if(moving){pos[player].walkTime+=dt;setHeading(pos[player],Math.atan2(dx,dz));}
   if(actor.jumpY<=0&&PaperWorld.supportAt(pos[player].x,pos[player].z)<-100){respawn();return}
-  if(stageState.hitCooldown<=0&&((PaperWorld.hazardAt(pos[player].x,pos[player].z)&&actor.jumpY<.22)|| (actor.jumpY<.65&&stageState.mobs.some(m=>Math.hypot(m.x-pos[player].x,m.z-pos[player].z)<.88)))){respawn();return}
+  if(stageState.hitCooldown<=0&&((PaperWorld.hazardAt(pos[player].x,pos[player].z)&&actor.jumpY<.22)|| (actor.jumpY<.4&&stageState.mobs.some(m=>m.mode!=="stunned"&&Math.hypot(m.x-pos[player].x,m.z-pos[player].z)<.88)))){respawn();return}
+  for(const m of stageState.mobs)if(m.mode!=='stunned'&&actor.jumpV<0&&actor.jumpY>.4&&actor.jumpY<.85&&Math.hypot(m.x-actor.x,m.z-actor.z)<.8){m.mode='stunned';m.timer=2.5;actor.jumpV=3.2;flowerChime();}
   collectNearbyFlowers();const goal=currentChapter().goal,goalDistance=Math.hypot(pos[player].x-goal.x,pos[player].z-goal.z);
   if(goalDistance<1.35&&currentCollected()===3){stageState.mode="exit";setPrompt(`¡Nivel ${stageState.level} superado! Presioná para entrar al siguiente →`,true);$("#travel").style.display="block"}
-  else {stageState.mode="platform";$("#travel").style.display="none";setPrompt(`Nivel ${stageState.level} · Ramos ${currentCollected()}/3 · Meta: ${goalDistance.toFixed(1)} m`)}
+  else {stageState.mode="platform";$("#travel").style.display="none";setPrompt(`Nivel ${stageState.level} · Ramos ${currentCollected()}/3 · Saltá entre islas · esquivá la embestida`)}
   hud.innerHTML=`<strong>Nivel ${stageState.level}/3</strong> · Ramos: ${currentCollected()}/3 · Total: ${stageState.flowers}<br><strong>${stageState.chosen}</strong> · ${escapeHtml(stageState.dedication)}`;
 }
 function update(dt,t){
@@ -881,9 +931,9 @@ function update(dt,t){
   if(!locked){
     dx=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0);
     dz=(key.has("s")||key.has("arrowdown")?1:0)-(key.has("w")||key.has("arrowup")?1:0);
-    if(dx||dz)autoWalk=false;
+    if(Math.hypot(joystick.x,joystick.y)>.04){dx=joystick.x;dz=joystick.y;}if(dx||dz)autoWalk=false;
     if(autoWalk){const tx=pos[partner].x-1.65,tz=pos[partner].z;dx=tx-pos[player].x;dz=tz-pos[player].z;if(Math.hypot(dx,dz)<.09){autoWalk=false;dx=dz=0}}
-    const l=Math.hypot(dx,dz);if(l){dx/=l;dz/=l;moving=true}
+    const l=Math.hypot(dx,dz);if(l){if(l>1||autoWalk){dx/=l;dz/=l}moving=true}
     // Keyboard directions are relative to the camera; scripted travel is in world space.
     if(!autoWalk){const yaw=engine.yaw,wx=dx*Math.cos(yaw)+dz*Math.sin(yaw);dz=-dx*Math.sin(yaw)+dz*Math.cos(yaw);dx=wx;}
     const nx=Math.max(-X_LIMIT,Math.min(X_LIMIT,pos[player].x+dx*3.7*dt));
@@ -924,6 +974,7 @@ function update(dt,t){
 }
 function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(rendererReady){update(dt,now/1000);engine.render(dt,now/1000,stageState,pos,player,partner)}requestAnimationFrame(loop)}
 window.__BUBU_DUDU_PAPER_DATE__={start,reset,menu:menuBack,giveFlowers,kiss,state:stageState,debugNear(){if(player&&partner){pos[player].x=pos[partner].x-1.55;pos[player].z=pos[partner].z+.18;face();}}};
+if(new URLSearchParams(location.search).has('test'))Object.assign(window.__BUBU_DUDU_PAPER_DATE__,{loadLevel,positions:pos,jump});
 function cameraButton(button,amount){
   if(!button)return;
   button.style.touchAction="none";button.style.userSelect="none";
