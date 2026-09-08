@@ -407,21 +407,6 @@ body[data-chapter="1"] .dialogue{background:#29384a;color:#eee3d4;border-color:#
     const walk=action==='walk',phase=frame/8*Math.PI*2,step=walk?Math.sin(phase):0,bob=walk?Math.abs(Math.sin(phase))*4:0;
     const giving=action==='give',receive=action==='receive',kissing=action==='kiss',happy=action==='happy'||emotion==='happy';
     const arm=giving?frame/3:receive?1:0,lean=kissing?frame*2.5:0;
-    if(view==='side'&&(giving||receive||kissing)){
-      const extend=kissing?.6:giving?frame/3:1;
-      return `<g stroke="${dark}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
-       <ellipse cx="96" cy="275" rx="18" ry="12" fill="${panda?ear:fur}"/><path d="M85 192Q67 231 78 260Q84 277 119 273H156Q186 272 181 241L168 196" fill="${fur}"/><ellipse cx="165" cy="275" rx="18" ry="12" fill="${panda?ear:fur}"/>
-       <circle cx="65" cy="68" r="23" fill="${ear}"/>${panda?'':`<circle cx="65" cy="68" r="12" fill="#694331" stroke="none"/>`}
-       <path d="M126 44Q62 37 43 85Q29 117 36 167Q40 197 82 204H154Q191 205 209 185Q239 180 239 161Q239 148 219 141L211 103Q202 56 160 47Z" fill="${fur}"/>
-       <circle cx="166" cy="65" r="19" fill="${ear}"/>${panda?'':`<circle cx="166" cy="65" r="9" fill="#694331" stroke="none"/>`}
-       <path d="M163 139q10 -10 20 0" fill="none" stroke-width="4"/>
-       <ellipse cx="182" cy="172" rx="17" ry="14" fill="${cheek}" stroke="none"/>
-       <ellipse cx="220" cy="151" rx="5" ry="4" fill="${dark}" stroke="none"/>
-       ${kissing?'<path d="M229 162q14 -4 15 2l-9 3 9 3q-2 6 -15 0" fill="none" stroke-width="3.5"/>':'<path d="M221 166q9 7 14 0" fill="none" stroke-width="3.5"/>'}
-       ${panda?'<path d="M116 208l6 13 9 -5 11 6 8 -16" fill="#492d27" stroke="none"/>':''}
-       <path data-part="arm" d="M153 220Q${174+extend*32} ${224-extend*10} ${184+extend*45} ${225-extend*14}Q${203+extend*35} ${241-extend*13} ${178+extend*30} ${243-extend*7}L150 239" fill="${fur}"/>
-      </g>`;
-    }
     const foot=(x,y,angle)=>`<g transform="rotate(${angle} ${x} ${y})"><ellipse cx="${x}" cy="${y}" rx="18" ry="12" fill="${panda?'#492d27':fur}"/></g>`;
     let body=`<g stroke="${dark}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(${lean} 130 270)">`;
     if(view==='side'){
@@ -874,8 +859,8 @@ function babble(name,kind='talk'){
  if(!stageState.music)return;const a=audio();if(!a)return;
  // The reference uses tiny repeated syllables: Bubu stays round and low,
  // Dudu answers with a brighter rising "du-du" cadence.
- const pitch=name==='Bubu'?238:352;
- const pattern=kind==='kiss'?(name==='Bubu'?[1.08,1.24]:[1.02,1.18]):name==='Bubu'?[1,.88,1.02,.9]:[1,1.15,1.04,1.2,1.08];
+ const pitch=name==='Bubu'?238:352,syllables=name==='Bubu'?'atata':'dadada';
+ const pattern=kind==='kiss'?(name==='Bubu'?[1.08,1.24]:[1.02,1.18]):syllables==='atata'?[1,.88,1.02,.9]:[1,1.15,1.04,1.2,1.08];
  pattern.forEach((p,i)=>{
   const t=a.currentTime+i*.135,source=a.createOscillator(),envelope=a.createGain();
   source.type='triangle';source.frequency.setValueAtTime(pitch*p,t);source.frequency.exponentialRampToValueAtTime(pitch*p*(name==='Bubu'?.82:.9),t+.12);

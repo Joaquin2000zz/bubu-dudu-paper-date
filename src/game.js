@@ -108,8 +108,8 @@ function babble(name,kind='talk'){
  if(!stageState.music)return;const a=audio();if(!a)return;
  // The reference uses tiny repeated syllables: Bubu stays round and low,
  // Dudu answers with a brighter rising "du-du" cadence.
- const pitch=name==='Bubu'?238:352;
- const pattern=kind==='kiss'?(name==='Bubu'?[1.08,1.24]:[1.02,1.18]):name==='Bubu'?[1,.88,1.02,.9]:[1,1.15,1.04,1.2,1.08];
+ const pitch=name==='Bubu'?238:352,syllables=name==='Bubu'?'atata':'dadada';
+ const pattern=kind==='kiss'?(name==='Bubu'?[1.08,1.24]:[1.02,1.18]):syllables==='atata'?[1,.88,1.02,.9]:[1,1.15,1.04,1.2,1.08];
  pattern.forEach((p,i)=>{
   const t=a.currentTime+i*.135,source=a.createOscillator(),envelope=a.createGain();
   source.type='triangle';source.frequency.setValueAtTime(pitch*p,t);source.frequency.exponentialRampToValueAtTime(pitch*p*(name==='Bubu'?.82:.9),t+.12);
