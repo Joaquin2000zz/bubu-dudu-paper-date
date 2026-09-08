@@ -126,7 +126,7 @@ h1{margin:0;font-size:clamp(34px,6vw,55px);letter-spacing:-2px}
 .tips{margin-top:17px;font-size:12px;opacity:.72;line-height:1.55}
 kbd{display:inline-block;padding:2px 6px;min-width:25px;border:1px solid #d9c4ca;border-radius:6px;background:#f1e5e8;box-shadow:0 2px 0 #ceb9c0;font-weight:900}
 
-#mobile{display:none;position:absolute;left:10px;right:10px;bottom:10px;justify-content:space-between;align-items:end;pointer-events:none}
+#mobile{display:none;position:absolute;left:10px;right:10px;bottom:10px;justify-content:space-between;align-items:end;pointer-events:none;z-index:40}
 .joystick,.acts{pointer-events:auto}
 #joystick{position:relative;width:126px;height:126px;border:2px solid rgba(87,55,67,.24);border-radius:50%;background:radial-gradient(circle at 38% 32%,#fffdf6e8,#ead9bcdd);box-shadow:0 5px 0 rgba(87,55,67,.16),inset 0 0 0 10px #fff9e355;touch-action:none}
 #joystick:after{content:"";position:absolute;inset:26px;border:1px dashed #b79872aa;border-radius:50%;pointer-events:none}

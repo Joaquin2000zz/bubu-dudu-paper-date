@@ -123,7 +123,7 @@ function jump(){
 }
 $("#travel").onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.level===3)autoWalk=true};
 prompt.onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.mode==="approach"||stageState.mode==="ready"||stageState.mode==="done")giveFlowers();else kiss()};
-const joystickEl=$("#joystick"),joystickKnob=$("#joystickKnob");let joystickPointer=null;
+const joystickEl=$("#joystick"),joystickKnob=$("#joystickKnob");let joystickPointer=null,touchJoystickId=null;
 function updateJoystick(e){
   const r=joystickEl.getBoundingClientRect(),max=r.width*.34,cx=r.left+r.width/2,cy=r.top+r.height/2;
   let x=e.clientX-cx,y=e.clientY-cy,l=Math.hypot(x,y);if(l>max){x=x/l*max;y=y/l*max}joystick.x=x/max;joystick.y=y/max;joystickKnob.style.transform=`translate(${x}px,${y}px)`;
@@ -133,11 +133,11 @@ let touchJoystick=false;
 joystickEl.addEventListener("pointerdown",e=>{if(touchJoystick)return;e.preventDefault();joystickPointer=e.pointerId;joystickEl.setPointerCapture?.(e.pointerId);updateJoystick(e)},{passive:false});
 joystickEl.addEventListener("pointermove",e=>{if(!touchJoystick&&e.pointerId===joystickPointer){e.preventDefault();updateJoystick(e)}},{passive:false});
 joystickEl.addEventListener("pointerup",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});joystickEl.addEventListener("pointercancel",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});
-function touchPoint(e){const p=e.touches?.[0]||e.changedTouches?.[0];return p?{clientX:p.clientX,clientY:p.clientY}:null}
-joystickEl.addEventListener("touchstart",e=>{const p=touchPoint(e);if(!p)return;e.preventDefault();touchJoystick=true;updateJoystick(p)},{passive:false});
-joystickEl.addEventListener("touchmove",e=>{const p=touchPoint(e);if(!touchJoystick||!p)return;e.preventDefault();updateJoystick(p)},{passive:false});
-joystickEl.addEventListener("touchend",e=>{if(touchJoystick){e.preventDefault();touchJoystick=false;releaseJoystick()}},{passive:false});
-joystickEl.addEventListener("touchcancel",()=>{touchJoystick=false;releaseJoystick()},{passive:false});
+function touchPoint(e,id){const list=[...(e.changedTouches||[]),...(e.touches||[])];const p=list.find(t=>id===undefined||t.identifier===id);return p?{clientX:p.clientX,clientY:p.clientY}:null}
+document.addEventListener("touchstart",e=>{if(!e.target.closest?.("#joystick"))return;const p=e.changedTouches?.[0];if(!p)return;e.preventDefault();touchJoystick=true;touchJoystickId=p.identifier;updateJoystick({clientX:p.clientX,clientY:p.clientY})},{capture:true,passive:false});
+document.addEventListener("touchmove",e=>{if(!touchJoystick)return;const p=touchPoint(e,touchJoystickId);if(!p)return;e.preventDefault();updateJoystick(p)},{capture:true,passive:false});
+document.addEventListener("touchend",e=>{if(!touchJoystick||![...(e.changedTouches||[])].some(t=>t.identifier===touchJoystickId))return;e.preventDefault();touchJoystick=false;touchJoystickId=null;releaseJoystick()},{capture:true,passive:false});
+document.addEventListener("touchcancel",()=>{touchJoystick=false;touchJoystickId=null;releaseJoystick()},{capture:true,passive:false});
 function mobileAction(selector,action){const b=$(selector);if(!b)return;let touchedAt=0;b.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"&&e.pointerType!=="pen")return;e.preventDefault();b.setPointerCapture?.(e.pointerId);touchedAt=performance.now();action()},{passive:false});b.addEventListener("click",e=>{if(performance.now()-touchedAt<600){e.preventDefault();return}action()},{passive:false});}
 mobileAction('[data-action="flowers"]',giveFlowers);mobileAction('[data-action="kiss"]',kiss);mobileAction('[data-action="jump"]',jump);
 
