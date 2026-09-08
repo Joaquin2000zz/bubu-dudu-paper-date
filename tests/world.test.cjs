@@ -32,7 +32,8 @@ test('Movement cannot tunnel through the pond, rails, bench or posts',()=>{
 test('The campaign has two hostile flower-gathering levels and the original garden finale',()=>{
  assert.deepEqual(Object.keys(w.levels),['1','2','3']);
  for(const id of [1,2]){
-  const level=w.level(id);assert.equal(level.flowers.length,3);assert(level.obstacles.length>0);assert(level.mobs.length>0);assert(level.goal);
+ const level=w.level(id);assert.equal(level.flowers.length,3);assert(level.obstacles.length>0);assert(level.mobs.length>0);assert(level.goal);
+  assert(level.gaps.length>=3);
   w.setLevel(id);assert.equal(w.levels[id].id,id);assert(w.hazardAt(level.hazards[0].x,level.hazards[0].z));
  }
  w.setLevel(3);assert.equal(w.level(3).name,'El jardín de los encuentros');assert.equal(w.level(3).giftSpots.length,3);
@@ -40,4 +41,8 @@ test('The campaign has two hostile flower-gathering levels and the original gard
 test('A jumping actor can clear a solid obstacle while a grounded actor cannot',()=>{
  w.setLevel(1);const grounded=w.move({x:-3.5,z:4.5},-.5,4.5);const airborne=w.move({x:-3.5,z:4.5,jumpY:.8},-.5,4.5);
  assert(grounded.x< -2.5);assert(airborne.x>-.7);w.setLevel(3);
+});
+test('A gap blocks grounded travel and can be crossed in the air',()=>{
+ w.setLevel(1);const grounded=w.move({x:-1,z:6.2},-1,4.2);const airborne=w.move({x:-1,z:6.2,jumpY:.8},-1,4.2);
+ assert(grounded.z>5.8);assert(airborne.z<4.5);w.setLevel(3);
 });

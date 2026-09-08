@@ -69,6 +69,7 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
   for(const id of [1,2]){
     const levelGeometry=[];const chapter=PaperWorld.level(id);
     for(const f of chapter.floors)box(levelGeometry,f.x,f.y,f.z,f.w,f.h,f.d,f.color);
+    for(const g of (chapter.gaps||[]))box(levelGeometry,g.x,-.28,g.z,g.w,.08,g.d,'#7f8798');
     for(const o of chapter.obstacles)box(levelGeometry,o.x,o.y,o.z,o.w,o.h,o.d,o.color);
     for(const h of chapter.hazards){box(levelGeometry,h.x,.03,h.z,h.w,.10,h.d,'#c96d7f');box(levelGeometry,h.x,.14,h.z,h.w*.72,.05,h.d*.72,'#f1b2a7');}
     const g=chapter.goal;box(levelGeometry,g.x,.03,g.z,2.5,.13,2.5,'#e7c895');

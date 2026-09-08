@@ -5,6 +5,7 @@ const $=s=>document.querySelector(s), fx=$("#fx"), hud=$("#hud"), prompt=$("#pro
 const U=58, X_LIMIT=8.5, Z_MIN=-8.5, Z_MAX=8.1;
 const stageState={mode:"menu",chosen:"",kisses:0,eventT:0,dedication:"",music:true,level:1,flowers:0,collected:[],gifted:0,giftSpots:[],mobs:[],hitCooldown:0};
 const key=new Set();
+const joystick={x:0,y:0};
 let autoWalk=false;
 const reducedMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const pos={
@@ -44,7 +45,7 @@ function currentCollected(){const ids=currentChapter().flowers||[];return ids.fi
 function updateChapterUi(){const c=currentChapter();chapter.innerHTML=`${c.chapter}<b>${c.name}</b>`;const count=stageState.level<3?`${currentCollected()}/3`:`${stageState.flowers-stageState.gifted}/${stageState.flowers}`;hud.innerHTML=`<strong>Nivel ${stageState.level}/3</strong> · Ramos: ${count}<br><strong>${stageState.chosen||"Bubu"}</strong> · ${escapeHtml(stageState.dedication||"Para Bettina, con todo mi amor 💗")}`}
 function resetActorState(p){p.moving=false;p.walkTime=0;p.turnT=0;p.heading=0;p.jumpY=0;p.jumpV=0}
 function loadLevel(levelNumber){
-  const c=PaperWorld.setLevel(levelNumber);stageState.level=levelNumber;stageState.eventT=0;stageState.hitCooldown=0;stageState.giftSpots=c.giftSpots||[];
+  const c=PaperWorld.setLevel(levelNumber);stageState.level=levelNumber;stageState.eventT=0;stageState.hitCooldown=0;stageState.giftSpots=c.giftSpots||[];joystick.x=joystick.y=0;document.querySelector("#joystickKnob")?.style.setProperty("transform","translate(0,0)");
   stageState.mobs=(c.mobs||[]).map((m,i)=>({...m,baseX:m.x,baseZ:m.z,phase:i*.9,flip:false}));
   const start=c.start;Object.assign(pos[player],{x:start.x,z:start.z,flip:false,heading:Math.PI});
   Object.assign(pos[partner],{x:c.goal.x,z:c.goal.z,flip:true,heading:0});
@@ -64,7 +65,7 @@ function start(name){
 $("#chooseBubu").onclick=()=>start("Bubu");$("#chooseDudu").onclick=()=>start("Dudu");
 
 function reset(){ if(!stageState.chosen){menu.style.display="flex";return} start(stageState.chosen) }
-function menuBack(){key.clear();autoWalk=false;PaperWorld.setLevel(3);document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
+function menuBack(){key.clear();joystick.x=joystick.y=0;autoWalk=false;PaperWorld.setLevel(3);document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
 
 function hearts(n=18){
   if(reducedMotion)return;
@@ -107,8 +108,8 @@ addEventListener("keydown",e=>{
   key.add(k);if(e.repeat)return;if(k==="e")giveFlowers();if(k===" ")kiss();if(k==="j"||k==="x")jump()
 },{passive:false});
 addEventListener("keyup",e=>key.delete(e.key.toLowerCase()));
-addEventListener("blur",()=>{key.clear();autoWalk=false});
-document.addEventListener("visibilitychange",()=>{if(document.hidden){key.clear();autoWalk=false}});
+addEventListener("blur",()=>{key.clear();releaseJoystick?.();autoWalk=false});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){key.clear();releaseJoystick?.();autoWalk=false}});
 document.addEventListener("selectstart",e=>{if(!e.target.matches?.("input,textarea,[contenteditable=true]"))e.preventDefault()},{passive:false});
 document.addEventListener("dragstart",e=>{if(!e.target.matches?.("input,textarea,[contenteditable=true]"))e.preventDefault()},{passive:false});
 document.addEventListener("contextmenu",e=>{if(e.target.closest?.("#mobile,#cameraControls,#scene3d"))e.preventDefault()},{passive:false});
@@ -122,24 +123,35 @@ function jump(){
 }
 $("#travel").onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.level===3)autoWalk=true};
 prompt.onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.mode==="approach"||stageState.mode==="ready"||stageState.mode==="done")giveFlowers();else kiss()};
-document.querySelectorAll("[data-key]").forEach(b=>{const k=b.dataset.key;b.style.touchAction="none";b.style.userSelect="none";const d=e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);key.add(k)},u=e=>{e.preventDefault();key.delete(k)};b.onpointerdown=d;b.onpointerup=u;b.onpointercancel=u;b.onpointerleave=u});
-document.querySelector('[data-action="flowers"]').onclick=giveFlowers;document.querySelector('[data-action="kiss"]').onclick=kiss;document.querySelector('[data-action="jump"]').onclick=jump;
+const joystickEl=$("#joystick"),joystickKnob=$("#joystickKnob");let joystickPointer=null;
+function updateJoystick(e){
+  const r=joystickEl.getBoundingClientRect(),max=r.width*.34,cx=r.left+r.width/2,cy=r.top+r.height/2;
+  let x=e.clientX-cx,y=e.clientY-cy,l=Math.hypot(x,y);if(l>max){x=x/l*max;y=y/l*max}joystick.x=x/max;joystick.y=y/max;joystickKnob.style.transform=`translate(${x}px,${y}px)`;
+}
+function releaseJoystick(){joystickPointer=null;joystick.x=joystick.y=0;joystickKnob.style.transform="translate(0,0)"}
+joystickEl.addEventListener("pointerdown",e=>{e.preventDefault();joystickPointer=e.pointerId;joystickEl.setPointerCapture?.(e.pointerId);updateJoystick(e)},{passive:false});
+joystickEl.addEventListener("pointermove",e=>{if(e.pointerId===joystickPointer){e.preventDefault();updateJoystick(e)}},{passive:false});
+joystickEl.addEventListener("pointerup",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});joystickEl.addEventListener("pointercancel",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});
+function mobileAction(selector,action){const b=$(selector);if(!b)return;let touchedAt=0;b.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"&&e.pointerType!=="pen")return;e.preventDefault();b.setPointerCapture?.(e.pointerId);touchedAt=performance.now();action()},{passive:false});b.addEventListener("click",e=>{if(performance.now()-touchedAt<600){e.preventDefault();return}action()},{passive:false});}
+mobileAction('[data-action="flowers"]',giveFlowers);mobileAction('[data-action="kiss"]',kiss);mobileAction('[data-action="jump"]',jump);
 
 let last=performance.now(),petalT=0;
 function updateMobs(t){
   for(const m of stageState.mobs){const previous=m.axis==="x"?m.x:m.z,offset=Math.sin(t*m.speed+m.phase)*m.range;if(m.axis==="x")m.x=m.baseX+offset;else m.z=m.baseZ+offset;m.flip=previous>(m.axis==="x"?m.x:m.z)}
 }
-function respawn(){const c=currentChapter();Object.assign(pos[player],{x:c.start.x,z:c.start.z});pos[player].moving=false;stageState.hitCooldown=.8;setPrompt("¡Cuidado con los enemigos y las espinas! Volviste al inicio.",true);hearts(8)}
+function respawn(){const c=currentChapter();Object.assign(pos[player],{x:c.start.x,z:c.start.z,jumpY:0,jumpV:0});pos[player].moving=false;stageState.hitCooldown=.8;setPrompt("¡Cuidado con los enemigos y los huecos! Volviste al inicio.",true);hearts(8)}
 function collectNearbyFlowers(){
   const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
 }
 function updatePlatform(dt,t){
   stageState.hitCooldown=Math.max(0,stageState.hitCooldown-dt);updateMobs(t);
   const actor=pos[player];if(actor.jumpY>0||actor.jumpV>0){actor.jumpY+=actor.jumpV*dt;actor.jumpV-=13.5*dt;if(actor.jumpY<=0){actor.jumpY=0;actor.jumpV=0;}}
-  let dx=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0),dz=(key.has("s")||key.has("arrowdown")?1:0)-(key.has("w")||key.has("arrowup")?1:0),moving=false;
-  const l=Math.hypot(dx,dz);if(l){dx/=l;dz/=l;moving=true;const yaw=engine.yaw,wx=dx*Math.cos(yaw)+dz*Math.sin(yaw);dz=-dx*Math.sin(yaw)+dz*Math.cos(yaw);dx=wx;}
+  const keyboardX=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0),keyboardZ=(key.has("s")||key.has("arrowdown")?1:0)-(key.has("w")||key.has("arrowup")?1:0),analog=Math.hypot(joystick.x,joystick.y)>.04;
+  let dx=analog?joystick.x:keyboardX,dz=analog?joystick.y:keyboardZ,moving=false;
+  const l=Math.hypot(dx,dz);if(l){if(!analog){dx/=l;dz/=l}moving=true;const yaw=engine.yaw,wx=dx*Math.cos(yaw)+dz*Math.sin(yaw);dz=-dx*Math.sin(yaw)+dz*Math.cos(yaw);dx=wx;}
   const previous={x:pos[player].x,z:pos[player].z},nx=Math.max(-X_LIMIT,Math.min(X_LIMIT,pos[player].x+dx*3.7*dt)),nz=Math.max(Z_MIN,Math.min(Z_MAX,pos[player].z+dz*3.7*dt));Object.assign(pos[player],engine.move(pos[player],nx,nz));
   moving=Math.hypot(pos[player].x-previous.x,pos[player].z-previous.z)>.0001;pos[player].moving=moving;pos[partner].moving=false;if(moving){pos[player].walkTime+=dt;setHeading(pos[player],Math.atan2(dx,dz));}
+  if(actor.jumpY<=0&&PaperWorld.supportAt(pos[player].x,pos[player].z)<-100){respawn();return}
   if(stageState.hitCooldown<=0&&((PaperWorld.hazardAt(pos[player].x,pos[player].z)&&actor.jumpY<.22)|| (actor.jumpY<.65&&stageState.mobs.some(m=>Math.hypot(m.x-pos[player].x,m.z-pos[player].z)<.88)))){respawn();return}
   collectNearbyFlowers();const goal=currentChapter().goal,goalDistance=Math.hypot(pos[player].x-goal.x,pos[player].z-goal.z);
   if(goalDistance<1.35&&currentCollected()===3){stageState.mode="exit";setPrompt(`¡Nivel ${stageState.level} superado! Presioná para entrar al siguiente →`,true);$("#travel").style.display="block"}

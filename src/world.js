@@ -15,15 +15,17 @@ const PaperWorld=(()=>{
  const floor=(id,x,y,z,w,h,d,color)=>({id,x,y,z,w,h,d,color,top:y+h});
  const LEVELS={
   1:{
-   id:1,name:'La pradera de papel',chapter:'CAPÍTULO 01',start:{x:-5,z:7},goal:{x:7,z:-7},
+   id:1,name:'La pradera de papel',chapter:'CAPÍTULO 01',start:{x:-3.5,z:7},goal:{x:7,z:-7},
    floors:[
     floor('l1-ground',0,-.12,0,20,.15,21.7,'#9fbe83'),
     floor('l1-step-a',-5,.03,1.35,3.7,.12,.70,'#d7af80'),floor('l1-step-b',-5,.15,1.85,3.7,.12,.70,'#e8c999'),
     floor('l1-platform-a',-5,.27,2.8,4.1,.16,2.45,'#e8c895'),
     floor('l1-step-c',0,.03,-.3,3.0,.12,.70,'#d7af80'),floor('l1-step-d',0,.15,-.8,3.0,.12,.70,'#e8c999'),
     floor('l1-platform-b',0,.27,-1.45,3.7,.18,2.25,'#dcb783'),
-    floor('l1-platform-c',5,.22,-5.0,3.7,.16,2.4,'#efd39f')
+    floor('l1-platform-c',5,.22,-5.0,3.7,.16,2.4,'#efd39f'),
+    floor('l1-bridge-a',-1.0,.27,5.3,3.0,.16,.72,'#e7c895'),floor('l1-bridge-b',2.0,.30,.3,3.0,.16,.72,'#e7c895'),floor('l1-bridge-c',4.0,.27,-3.5,3.0,.16,.72,'#e7c895')
    ],
+   gaps:[{id:'l1-gap-a',x:0,z:5.3,w:19,d:1.15},{id:'l1-gap-b',x:0,z:.3,w:19,d:1.15},{id:'l1-gap-c',x:0,z:-3.5,w:19,d:1.15}],
    obstacles:[
     {id:'l1-crate-a',x:-1.9,z:4.5,w:1.0,d:1.0,y:.03,h:.72,color:'#a86f4d',kind:'crate'},
     {id:'l1-crate-b',x:2.9,z:1.5,w:1.2,d:1.2,y:.03,h:.82,color:'#b47e53',kind:'crate'},
@@ -34,15 +36,17 @@ const PaperWorld=(()=>{
    mobs:[{id:'l1-slime-a',x:-2.8,z:6,axis:'x',range:2.0,speed:1.1},{id:'l1-slime-b',x:4.4,z:-1.0,axis:'z',range:1.7,speed:1.35}]
   },
   2:{
-   id:2,name:'El bosque de cartulina',chapter:'CAPÍTULO 02',start:{x:-5,z:7},goal:{x:7,z:-7},
+   id:2,name:'El bosque de cartulina',chapter:'CAPÍTULO 02',start:{x:-3.5,z:7},goal:{x:7,z:-7},
    floors:[
     floor('l2-ground',0,-.12,0,20,.15,21.7,'#89ad83'),
     floor('l2-island-a',-5,.35,4.0,3.8,.18,2.4,'#cda97e'),floor('l2-island-b',-1,.70,1.0,3.0,.18,2.1,'#e4c08e'),
     floor('l2-island-c',3,.38,-2.0,3.5,.18,2.0,'#d3ad7c'),floor('l2-island-d',6,.72,-5.5,3.0,.18,2.2,'#efd49f'),
     floor('l2-step-a',-3,.03,2.7,1.0,.15,.65,'#d2aa78'),floor('l2-step-b',-2.2,.18,2.0,1.0,.15,.65,'#e4c28e'),
     floor('l2-step-c',1,.03,-.8,1.0,.15,.65,'#d2aa78'),floor('l2-step-d',1.8,.18,-1.4,1.0,.15,.65,'#e4c28e'),
-    floor('l2-step-e',4.5,.03,-4.2,1.0,.15,.65,'#d2aa78'),floor('l2-step-f',5.3,.18,-4.8,1.0,.15,.65,'#e4c28e')
+    floor('l2-step-e',4.5,.03,-4.2,1.0,.15,.65,'#d2aa78'),floor('l2-step-f',5.3,.18,-4.8,1.0,.15,.65,'#e4c28e'),
+    floor('l2-bridge-a',-3.5,.46,5.3,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-b',-.2,.72,1.8,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-c',2.7,.46,-1.4,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-d',5.0,.72,-4.5,3.0,.18,.72,'#e4c08e')
    ],
+   gaps:[{id:'l2-gap-a',x:0,z:5.3,w:19,d:1.15},{id:'l2-gap-b',x:0,z:1.8,w:19,d:1.15},{id:'l2-gap-c',x:0,z:-1.4,w:19,d:1.15},{id:'l2-gap-d',x:0,z:-4.5,w:19,d:1.15}],
    obstacles:[
     {id:'l2-log-a',x:-6.4,z:-1.8,w:2.2,d:.75,y:.03,h:.75,color:'#866048',kind:'log'},
     {id:'l2-crate-a',x:1.3,z:4.4,w:1.2,d:1.2,y:.03,h:.95,color:'#9c674a',kind:'crate'},
@@ -54,7 +58,7 @@ const PaperWorld=(()=>{
   },
   3:{
    id:3,name:'El jardín de los encuentros',chapter:'CAPÍTULO 03 · FINAL',start:{x:-.8,z:3},goal:{x:1,z:-5.7},
-   floors:gardenFloors,obstacles:[],hazards:[],mobs:[],flowers:[],giftSpots:[{x:-2.8,z:4.8},{x:2.2,z:3.8},{x:4.7,z:-1.2}]
+   floors:gardenFloors,gaps:[],obstacles:[],hazards:[],mobs:[],flowers:[],giftSpots:[{x:-2.8,z:4.8},{x:2.2,z:3.8},{x:4.7,z:-1.2}]
   }
  };
  let activeId=3,activeFloors=gardenFloors;
@@ -63,7 +67,8 @@ const PaperWorld=(()=>{
  function level(id=activeId){return LEVELS[Number(id)]}
  function heightAt(x,z){
    let height=-Infinity;
-   for(const f of activeFloors)if(Math.abs(x-f.x)<=f.w/2+1e-8&&Math.abs(z-f.z)<=f.d/2+1e-8)height=Math.max(height,f.top);
+   const inGap=activeId!==3&&(level().gaps||[]).some(g=>Math.abs(x-g.x)<=g.w/2&&Math.abs(z-g.z)<=g.d/2);
+   for(const f of activeFloors)if(!(inGap&&f.id.endsWith('-ground'))&&Math.abs(x-f.x)<=f.w/2+1e-8&&Math.abs(z-f.z)<=f.d/2+1e-8)height=Math.max(height,f.top);
    if(activeId===3&&Math.abs(x+5)<=.725&&Math.abs(z)<=2.18){const i=Math.max(0,Math.min(10,Math.round((z+2)/.4)));height=Math.max(height,activeFloors.find(f=>f.id==='bridge'+i).top)}
    return height;
  }
@@ -82,7 +87,7 @@ const PaperWorld=(()=>{
  function hazardAt(x,z){return activeId===3?null:level().hazards.find(h=>rect(x,z,h.x,h.z,h.w,h.d))||null}
  function canMove(x,z,nx,nz,jumping=false){
    if(Math.abs(nx)>8.5||nz< -9.5||nz>8.1)return false;
-   if(jumping)return Math.abs(supportAt(nx,nz)-supportAt(x,z))<=1.25;
+   if(jumping){const from=supportAt(x,z),to=supportAt(nx,nz);if(from===-Infinity||to===-Infinity)return true;return Math.abs(to-from)<=1.25;}
    return !blocked(nx,nz)&&Math.abs(supportAt(nx,nz)-supportAt(x,z))<=maxStep+1e-8;
  }
  function move(position,nx,nz){

@@ -133,9 +133,11 @@ h1{margin:0;font-size:clamp(34px,6vw,55px);letter-spacing:-2px}
 kbd{display:inline-block;padding:2px 6px;min-width:25px;border:1px solid #d9c4ca;border-radius:6px;background:#f1e5e8;box-shadow:0 2px 0 #ceb9c0;font-weight:900}
 
 #mobile{display:none;position:absolute;left:10px;right:10px;bottom:10px;justify-content:space-between;align-items:end;pointer-events:none}
-.dpad,.acts{pointer-events:auto;display:grid;gap:6px}
-.dpad{grid-template:48px 48px 48px/48px 48px 48px}.dpad button,.acts button{border:1px solid rgba(87,55,67,.2);border-radius:13px;background:rgba(255,252,247,.88);box-shadow:0 4px 0 rgba(87,55,67,.14);font-weight:1000}
-.dpad .up{grid-column:2}.dpad .left{grid-row:2;grid-column:1}.dpad .down{grid-row:2;grid-column:2}.dpad .right{grid-row:2;grid-column:3}
+.joystick,.acts{pointer-events:auto}
+#joystick{position:relative;width:126px;height:126px;border:2px solid rgba(87,55,67,.24);border-radius:50%;background:radial-gradient(circle at 38% 32%,#fffdf6e8,#ead9bcdd);box-shadow:0 5px 0 rgba(87,55,67,.16),inset 0 0 0 10px #fff9e355;touch-action:none}
+#joystick:after{content:"";position:absolute;inset:26px;border:1px dashed #b79872aa;border-radius:50%;pointer-events:none}
+#joystickKnob{position:absolute;left:50%;top:50%;width:55px;height:55px;margin:-27.5px;border:2px solid #85634e;border-radius:50%;background:#f7dfb9;box-shadow:3px 4px 0 #85634e55;transform:translate(0,0);pointer-events:none}
+.acts{display:grid;gap:6px}.acts button{border:1px solid rgba(87,55,67,.2);border-radius:13px;background:rgba(255,252,247,.88);box-shadow:0 4px 0 rgba(87,55,67,.14);font-weight:1000}
 .acts{grid-template-columns:64px 64px 64px}.acts button{height:58px;font-size:12px}
 @media(pointer:coarse){#mobile{display:flex}#prompt{bottom:90px}#music{bottom:91px}}
 @media(max-width:650px){#quest{display:none!important}#hud{font-size:11px;min-width:205px}.actor .billboard{width:150px}.tree .billboard{width:155px}#arch .billboard{width:280px}.choose{min-height:175px}.choose svg{width:120px;height:120px}}
@@ -198,7 +200,7 @@ h1{font-family:Georgia,serif;font-size:clamp(40px,7vw,67px);letter-spacing:-3px;
 button:focus-visible{outline:3px solid #b66176;outline-offset:5px}
 #mobile button{touch-action:none;user-select:none;-webkit-user-select:none;border-radius:5px;background:#fff7df;min-height:44px}
 @media(max-width:700px){#menuCard{padding:25px 22px 20px}#chapter{top:95px}#chapter b{font-size:20px}#travel{top:159px}#quest{display:none!important}#hud{left:18px;top:18px;max-width:calc(100vw - 36px)}#prompt{max-width:calc(100vw - 36px);min-width:0;width:calc(100vw - 36px);bottom:88px;font-size:12px}#music{bottom:25px;right:20px}#menuButton{bottom:25px;left:20px}.choices{gap:14px}.choose svg{width:125px;height:130px}.choose{min-height:190px}.tag{font-size:12px}.tips{line-height:1.9}.subtitle{font-size:20px}}
-@media(max-width:380px){#mobile{left:8px;right:8px}.dpad{grid-template:40px 40px 40px/40px 40px 40px}.acts{grid-template-columns:repeat(3,52px);gap:4px}.acts button{height:52px;font-size:10px}}
+@media(max-width:380px){#mobile{left:8px;right:8px}#joystick{width:104px;height:104px}#joystickKnob{width:47px;height:47px;margin:-23.5px}.acts{grid-template-columns:repeat(3,52px);gap:4px}.acts button{height:52px;font-size:10px}}
 @media(pointer:coarse){#mobile{display:none}body.playing #mobile{display:flex}#prompt{bottom:180px}#music{bottom:145px}#menuButton{bottom:145px}}
 @media(max-height:650px){#menu{align-items:flex-start}#menuCard{margin:10px 0}.choose{min-height:155px}.choose svg{height:100px}.tips{margin-top:13px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -343,10 +345,7 @@ button:focus-visible{outline:3px solid #b66176;outline-offset:5px}
   </div>
 
   <div id="mobile">
-    <div class="dpad">
-      <button class="up" data-key="arrowup">▲</button><button class="left" data-key="arrowleft">◀</button>
-      <button class="down" data-key="arrowdown">▼</button><button class="right" data-key="arrowright">▶</button>
-    </div>
+    <div id="joystick" role="application" aria-label="Joystick de movimiento"><span id="joystickKnob"></span></div>
     <div class="acts"><button data-action="flowers">🌷<br>FLORES</button><button data-action="jump">⬆️<br>SALTAR</button><button data-action="kiss">💋<br>BESO</button></div>
   </div>
 
@@ -367,7 +366,7 @@ button:focus-visible{outline:3px solid #b66176;outline-offset:5px}
             <strong>Dudu</strong><small>un abrazo calentito</small><span class="startHint">JUGAR CONMIGO →</span>
           </button>
         </div>
-        <div class="credit">Personajes de 黄小B · una carta de amor hecha de papel</div><div class="tips">Arrastrá para girar la cámara · <kbd>WASD</kbd> o <kbd>↑↓←→</kbd> caminar · <kbd>J</kbd>/<kbd>X</kbd> saltar · juntá ramos · evitá los mobs · <kbd>E</kbd> usar flores · <kbd>Espacio</kbd> beso · <kbd>R</kbd> reiniciar · <kbd>Esc</kbd> menú</div>
+        <div class="credit">Personajes de 黄小B · una carta de amor hecha de papel</div><div class="tips">Usá el joystick táctil o <kbd>WASD</kbd>/<kbd>↑↓←→</kbd> · <kbd>J</kbd>/<kbd>X</kbd> saltar · juntá ramos · evitá los mobs · <kbd>E</kbd> usar flores · <kbd>Espacio</kbd> beso · <kbd>R</kbd> reiniciar · <kbd>Esc</kbd> menú</div>
       </div>
     </div>
   </div>
@@ -453,15 +452,17 @@ const PaperWorld=(()=>{
  const floor=(id,x,y,z,w,h,d,color)=>({id,x,y,z,w,h,d,color,top:y+h});
  const LEVELS={
   1:{
-   id:1,name:'La pradera de papel',chapter:'CAPÍTULO 01',start:{x:-5,z:7},goal:{x:7,z:-7},
+   id:1,name:'La pradera de papel',chapter:'CAPÍTULO 01',start:{x:-3.5,z:7},goal:{x:7,z:-7},
    floors:[
     floor('l1-ground',0,-.12,0,20,.15,21.7,'#9fbe83'),
     floor('l1-step-a',-5,.03,1.35,3.7,.12,.70,'#d7af80'),floor('l1-step-b',-5,.15,1.85,3.7,.12,.70,'#e8c999'),
     floor('l1-platform-a',-5,.27,2.8,4.1,.16,2.45,'#e8c895'),
     floor('l1-step-c',0,.03,-.3,3.0,.12,.70,'#d7af80'),floor('l1-step-d',0,.15,-.8,3.0,.12,.70,'#e8c999'),
     floor('l1-platform-b',0,.27,-1.45,3.7,.18,2.25,'#dcb783'),
-    floor('l1-platform-c',5,.22,-5.0,3.7,.16,2.4,'#efd39f')
+    floor('l1-platform-c',5,.22,-5.0,3.7,.16,2.4,'#efd39f'),
+    floor('l1-bridge-a',-1.0,.27,5.3,3.0,.16,.72,'#e7c895'),floor('l1-bridge-b',2.0,.30,.3,3.0,.16,.72,'#e7c895'),floor('l1-bridge-c',4.0,.27,-3.5,3.0,.16,.72,'#e7c895')
    ],
+   gaps:[{id:'l1-gap-a',x:0,z:5.3,w:19,d:1.15},{id:'l1-gap-b',x:0,z:.3,w:19,d:1.15},{id:'l1-gap-c',x:0,z:-3.5,w:19,d:1.15}],
    obstacles:[
     {id:'l1-crate-a',x:-1.9,z:4.5,w:1.0,d:1.0,y:.03,h:.72,color:'#a86f4d',kind:'crate'},
     {id:'l1-crate-b',x:2.9,z:1.5,w:1.2,d:1.2,y:.03,h:.82,color:'#b47e53',kind:'crate'},
@@ -472,15 +473,17 @@ const PaperWorld=(()=>{
    mobs:[{id:'l1-slime-a',x:-2.8,z:6,axis:'x',range:2.0,speed:1.1},{id:'l1-slime-b',x:4.4,z:-1.0,axis:'z',range:1.7,speed:1.35}]
   },
   2:{
-   id:2,name:'El bosque de cartulina',chapter:'CAPÍTULO 02',start:{x:-5,z:7},goal:{x:7,z:-7},
+   id:2,name:'El bosque de cartulina',chapter:'CAPÍTULO 02',start:{x:-3.5,z:7},goal:{x:7,z:-7},
    floors:[
     floor('l2-ground',0,-.12,0,20,.15,21.7,'#89ad83'),
     floor('l2-island-a',-5,.35,4.0,3.8,.18,2.4,'#cda97e'),floor('l2-island-b',-1,.70,1.0,3.0,.18,2.1,'#e4c08e'),
     floor('l2-island-c',3,.38,-2.0,3.5,.18,2.0,'#d3ad7c'),floor('l2-island-d',6,.72,-5.5,3.0,.18,2.2,'#efd49f'),
     floor('l2-step-a',-3,.03,2.7,1.0,.15,.65,'#d2aa78'),floor('l2-step-b',-2.2,.18,2.0,1.0,.15,.65,'#e4c28e'),
     floor('l2-step-c',1,.03,-.8,1.0,.15,.65,'#d2aa78'),floor('l2-step-d',1.8,.18,-1.4,1.0,.15,.65,'#e4c28e'),
-    floor('l2-step-e',4.5,.03,-4.2,1.0,.15,.65,'#d2aa78'),floor('l2-step-f',5.3,.18,-4.8,1.0,.15,.65,'#e4c28e')
+    floor('l2-step-e',4.5,.03,-4.2,1.0,.15,.65,'#d2aa78'),floor('l2-step-f',5.3,.18,-4.8,1.0,.15,.65,'#e4c28e'),
+    floor('l2-bridge-a',-3.5,.46,5.3,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-b',-.2,.72,1.8,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-c',2.7,.46,-1.4,3.0,.18,.72,'#e4c08e'),floor('l2-bridge-d',5.0,.72,-4.5,3.0,.18,.72,'#e4c08e')
    ],
+   gaps:[{id:'l2-gap-a',x:0,z:5.3,w:19,d:1.15},{id:'l2-gap-b',x:0,z:1.8,w:19,d:1.15},{id:'l2-gap-c',x:0,z:-1.4,w:19,d:1.15},{id:'l2-gap-d',x:0,z:-4.5,w:19,d:1.15}],
    obstacles:[
     {id:'l2-log-a',x:-6.4,z:-1.8,w:2.2,d:.75,y:.03,h:.75,color:'#866048',kind:'log'},
     {id:'l2-crate-a',x:1.3,z:4.4,w:1.2,d:1.2,y:.03,h:.95,color:'#9c674a',kind:'crate'},
@@ -492,7 +495,7 @@ const PaperWorld=(()=>{
   },
   3:{
    id:3,name:'El jardín de los encuentros',chapter:'CAPÍTULO 03 · FINAL',start:{x:-.8,z:3},goal:{x:1,z:-5.7},
-   floors:gardenFloors,obstacles:[],hazards:[],mobs:[],flowers:[],giftSpots:[{x:-2.8,z:4.8},{x:2.2,z:3.8},{x:4.7,z:-1.2}]
+   floors:gardenFloors,gaps:[],obstacles:[],hazards:[],mobs:[],flowers:[],giftSpots:[{x:-2.8,z:4.8},{x:2.2,z:3.8},{x:4.7,z:-1.2}]
   }
  };
  let activeId=3,activeFloors=gardenFloors;
@@ -501,7 +504,8 @@ const PaperWorld=(()=>{
  function level(id=activeId){return LEVELS[Number(id)]}
  function heightAt(x,z){
    let height=-Infinity;
-   for(const f of activeFloors)if(Math.abs(x-f.x)<=f.w/2+1e-8&&Math.abs(z-f.z)<=f.d/2+1e-8)height=Math.max(height,f.top);
+   const inGap=activeId!==3&&(level().gaps||[]).some(g=>Math.abs(x-g.x)<=g.w/2&&Math.abs(z-g.z)<=g.d/2);
+   for(const f of activeFloors)if(!(inGap&&f.id.endsWith('-ground'))&&Math.abs(x-f.x)<=f.w/2+1e-8&&Math.abs(z-f.z)<=f.d/2+1e-8)height=Math.max(height,f.top);
    if(activeId===3&&Math.abs(x+5)<=.725&&Math.abs(z)<=2.18){const i=Math.max(0,Math.min(10,Math.round((z+2)/.4)));height=Math.max(height,activeFloors.find(f=>f.id==='bridge'+i).top)}
    return height;
  }
@@ -520,7 +524,7 @@ const PaperWorld=(()=>{
  function hazardAt(x,z){return activeId===3?null:level().hazards.find(h=>rect(x,z,h.x,h.z,h.w,h.d))||null}
  function canMove(x,z,nx,nz,jumping=false){
    if(Math.abs(nx)>8.5||nz< -9.5||nz>8.1)return false;
-   if(jumping)return Math.abs(supportAt(nx,nz)-supportAt(x,z))<=1.25;
+   if(jumping){const from=supportAt(x,z),to=supportAt(nx,nz);if(from===-Infinity||to===-Infinity)return true;return Math.abs(to-from)<=1.25;}
    return !blocked(nx,nz)&&Math.abs(supportAt(nx,nz)-supportAt(x,z))<=maxStep+1e-8;
  }
  function move(position,nx,nz){
@@ -603,6 +607,7 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
   for(const id of [1,2]){
     const levelGeometry=[];const chapter=PaperWorld.level(id);
     for(const f of chapter.floors)box(levelGeometry,f.x,f.y,f.z,f.w,f.h,f.d,f.color);
+    for(const g of (chapter.gaps||[]))box(levelGeometry,g.x,-.28,g.z,g.w,.08,g.d,'#7f8798');
     for(const o of chapter.obstacles)box(levelGeometry,o.x,o.y,o.z,o.w,o.h,o.d,o.color);
     for(const h of chapter.hazards){box(levelGeometry,h.x,.03,h.z,h.w,.10,h.d,'#c96d7f');box(levelGeometry,h.x,.14,h.z,h.w*.72,.05,h.d*.72,'#f1b2a7');}
     const g=chapter.goal;box(levelGeometry,g.x,.03,g.z,2.5,.13,2.5,'#e7c895');
@@ -705,6 +710,7 @@ const $=s=>document.querySelector(s), fx=$("#fx"), hud=$("#hud"), prompt=$("#pro
 const U=58, X_LIMIT=8.5, Z_MIN=-8.5, Z_MAX=8.1;
 const stageState={mode:"menu",chosen:"",kisses:0,eventT:0,dedication:"",music:true,level:1,flowers:0,collected:[],gifted:0,giftSpots:[],mobs:[],hitCooldown:0};
 const key=new Set();
+const joystick={x:0,y:0};
 let autoWalk=false;
 const reducedMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const pos={
@@ -744,7 +750,7 @@ function currentCollected(){const ids=currentChapter().flowers||[];return ids.fi
 function updateChapterUi(){const c=currentChapter();chapter.innerHTML=`${c.chapter}<b>${c.name}</b>`;const count=stageState.level<3?`${currentCollected()}/3`:`${stageState.flowers-stageState.gifted}/${stageState.flowers}`;hud.innerHTML=`<strong>Nivel ${stageState.level}/3</strong> · Ramos: ${count}<br><strong>${stageState.chosen||"Bubu"}</strong> · ${escapeHtml(stageState.dedication||"Para Bettina, con todo mi amor 💗")}`}
 function resetActorState(p){p.moving=false;p.walkTime=0;p.turnT=0;p.heading=0;p.jumpY=0;p.jumpV=0}
 function loadLevel(levelNumber){
-  const c=PaperWorld.setLevel(levelNumber);stageState.level=levelNumber;stageState.eventT=0;stageState.hitCooldown=0;stageState.giftSpots=c.giftSpots||[];
+  const c=PaperWorld.setLevel(levelNumber);stageState.level=levelNumber;stageState.eventT=0;stageState.hitCooldown=0;stageState.giftSpots=c.giftSpots||[];joystick.x=joystick.y=0;document.querySelector("#joystickKnob")?.style.setProperty("transform","translate(0,0)");
   stageState.mobs=(c.mobs||[]).map((m,i)=>({...m,baseX:m.x,baseZ:m.z,phase:i*.9,flip:false}));
   const start=c.start;Object.assign(pos[player],{x:start.x,z:start.z,flip:false,heading:Math.PI});
   Object.assign(pos[partner],{x:c.goal.x,z:c.goal.z,flip:true,heading:0});
@@ -764,7 +770,7 @@ function start(name){
 $("#chooseBubu").onclick=()=>start("Bubu");$("#chooseDudu").onclick=()=>start("Dudu");
 
 function reset(){ if(!stageState.chosen){menu.style.display="flex";return} start(stageState.chosen) }
-function menuBack(){key.clear();autoWalk=false;PaperWorld.setLevel(3);document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
+function menuBack(){key.clear();joystick.x=joystick.y=0;autoWalk=false;PaperWorld.setLevel(3);document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
 
 function hearts(n=18){
   if(reducedMotion)return;
@@ -807,8 +813,8 @@ addEventListener("keydown",e=>{
   key.add(k);if(e.repeat)return;if(k==="e")giveFlowers();if(k===" ")kiss();if(k==="j"||k==="x")jump()
 },{passive:false});
 addEventListener("keyup",e=>key.delete(e.key.toLowerCase()));
-addEventListener("blur",()=>{key.clear();autoWalk=false});
-document.addEventListener("visibilitychange",()=>{if(document.hidden){key.clear();autoWalk=false}});
+addEventListener("blur",()=>{key.clear();releaseJoystick?.();autoWalk=false});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){key.clear();releaseJoystick?.();autoWalk=false}});
 document.addEventListener("selectstart",e=>{if(!e.target.matches?.("input,textarea,[contenteditable=true]"))e.preventDefault()},{passive:false});
 document.addEventListener("dragstart",e=>{if(!e.target.matches?.("input,textarea,[contenteditable=true]"))e.preventDefault()},{passive:false});
 document.addEventListener("contextmenu",e=>{if(e.target.closest?.("#mobile,#cameraControls,#scene3d"))e.preventDefault()},{passive:false});
@@ -822,24 +828,35 @@ function jump(){
 }
 $("#travel").onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.level===3)autoWalk=true};
 prompt.onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.mode==="approach"||stageState.mode==="ready"||stageState.mode==="done")giveFlowers();else kiss()};
-document.querySelectorAll("[data-key]").forEach(b=>{const k=b.dataset.key;b.style.touchAction="none";b.style.userSelect="none";const d=e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);key.add(k)},u=e=>{e.preventDefault();key.delete(k)};b.onpointerdown=d;b.onpointerup=u;b.onpointercancel=u;b.onpointerleave=u});
-document.querySelector('[data-action="flowers"]').onclick=giveFlowers;document.querySelector('[data-action="kiss"]').onclick=kiss;document.querySelector('[data-action="jump"]').onclick=jump;
+const joystickEl=$("#joystick"),joystickKnob=$("#joystickKnob");let joystickPointer=null;
+function updateJoystick(e){
+  const r=joystickEl.getBoundingClientRect(),max=r.width*.34,cx=r.left+r.width/2,cy=r.top+r.height/2;
+  let x=e.clientX-cx,y=e.clientY-cy,l=Math.hypot(x,y);if(l>max){x=x/l*max;y=y/l*max}joystick.x=x/max;joystick.y=y/max;joystickKnob.style.transform=`translate(${x}px,${y}px)`;
+}
+function releaseJoystick(){joystickPointer=null;joystick.x=joystick.y=0;joystickKnob.style.transform="translate(0,0)"}
+joystickEl.addEventListener("pointerdown",e=>{e.preventDefault();joystickPointer=e.pointerId;joystickEl.setPointerCapture?.(e.pointerId);updateJoystick(e)},{passive:false});
+joystickEl.addEventListener("pointermove",e=>{if(e.pointerId===joystickPointer){e.preventDefault();updateJoystick(e)}},{passive:false});
+joystickEl.addEventListener("pointerup",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});joystickEl.addEventListener("pointercancel",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});
+function mobileAction(selector,action){const b=$(selector);if(!b)return;let touchedAt=0;b.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"&&e.pointerType!=="pen")return;e.preventDefault();b.setPointerCapture?.(e.pointerId);touchedAt=performance.now();action()},{passive:false});b.addEventListener("click",e=>{if(performance.now()-touchedAt<600){e.preventDefault();return}action()},{passive:false});}
+mobileAction('[data-action="flowers"]',giveFlowers);mobileAction('[data-action="kiss"]',kiss);mobileAction('[data-action="jump"]',jump);
 
 let last=performance.now(),petalT=0;
 function updateMobs(t){
   for(const m of stageState.mobs){const previous=m.axis==="x"?m.x:m.z,offset=Math.sin(t*m.speed+m.phase)*m.range;if(m.axis==="x")m.x=m.baseX+offset;else m.z=m.baseZ+offset;m.flip=previous>(m.axis==="x"?m.x:m.z)}
 }
-function respawn(){const c=currentChapter();Object.assign(pos[player],{x:c.start.x,z:c.start.z});pos[player].moving=false;stageState.hitCooldown=.8;setPrompt("¡Cuidado con los enemigos y las espinas! Volviste al inicio.",true);hearts(8)}
+function respawn(){const c=currentChapter();Object.assign(pos[player],{x:c.start.x,z:c.start.z,jumpY:0,jumpV:0});pos[player].moving=false;stageState.hitCooldown=.8;setPrompt("¡Cuidado con los enemigos y los huecos! Volviste al inicio.",true);hearts(8)}
 function collectNearbyFlowers(){
   const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
 }
 function updatePlatform(dt,t){
   stageState.hitCooldown=Math.max(0,stageState.hitCooldown-dt);updateMobs(t);
   const actor=pos[player];if(actor.jumpY>0||actor.jumpV>0){actor.jumpY+=actor.jumpV*dt;actor.jumpV-=13.5*dt;if(actor.jumpY<=0){actor.jumpY=0;actor.jumpV=0;}}
-  let dx=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0),dz=(key.has("s")||key.has("arrowdown")?1:0)-(key.has("w")||key.has("arrowup")?1:0),moving=false;
-  const l=Math.hypot(dx,dz);if(l){dx/=l;dz/=l;moving=true;const yaw=engine.yaw,wx=dx*Math.cos(yaw)+dz*Math.sin(yaw);dz=-dx*Math.sin(yaw)+dz*Math.cos(yaw);dx=wx;}
+  const keyboardX=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0),keyboardZ=(key.has("s")||key.has("arrowdown")?1:0)-(key.has("w")||key.has("arrowup")?1:0),analog=Math.hypot(joystick.x,joystick.y)>.04;
+  let dx=analog?joystick.x:keyboardX,dz=analog?joystick.y:keyboardZ,moving=false;
+  const l=Math.hypot(dx,dz);if(l){if(!analog){dx/=l;dz/=l}moving=true;const yaw=engine.yaw,wx=dx*Math.cos(yaw)+dz*Math.sin(yaw);dz=-dx*Math.sin(yaw)+dz*Math.cos(yaw);dx=wx;}
   const previous={x:pos[player].x,z:pos[player].z},nx=Math.max(-X_LIMIT,Math.min(X_LIMIT,pos[player].x+dx*3.7*dt)),nz=Math.max(Z_MIN,Math.min(Z_MAX,pos[player].z+dz*3.7*dt));Object.assign(pos[player],engine.move(pos[player],nx,nz));
   moving=Math.hypot(pos[player].x-previous.x,pos[player].z-previous.z)>.0001;pos[player].moving=moving;pos[partner].moving=false;if(moving){pos[player].walkTime+=dt;setHeading(pos[player],Math.atan2(dx,dz));}
+  if(actor.jumpY<=0&&PaperWorld.supportAt(pos[player].x,pos[player].z)<-100){respawn();return}
   if(stageState.hitCooldown<=0&&((PaperWorld.hazardAt(pos[player].x,pos[player].z)&&actor.jumpY<.22)|| (actor.jumpY<.65&&stageState.mobs.some(m=>Math.hypot(m.x-pos[player].x,m.z-pos[player].z)<.88)))){respawn();return}
   collectNearbyFlowers();const goal=currentChapter().goal,goalDistance=Math.hypot(pos[player].x-goal.x,pos[player].z-goal.z);
   if(goalDistance<1.35&&currentCollected()===3){stageState.mode="exit";setPrompt(`¡Nivel ${stageState.level} superado! Presioná para entrar al siguiente →`,true);$("#travel").style.display="block"}
