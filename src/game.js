@@ -130,9 +130,10 @@ function updateJoystick(e){
 }
 function releaseJoystick(){joystickPointer=null;touchJoystick=false;touchJoystickId=null;joystick.x=joystick.y=0;joystickKnob.style.transform="translate(0,0)"}
 let touchJoystick=false;
-joystickEl.addEventListener("pointerdown",e=>{if(touchJoystick||joystickPointer!==null)return;e.preventDefault();joystickPointer=e.pointerId;joystickEl.setPointerCapture?.(e.pointerId);updateJoystick(e)},{passive:false});
-joystickEl.addEventListener("pointermove",e=>{if(e.pointerId===joystickPointer){e.preventDefault();updateJoystick(e)}},{passive:false});
-joystickEl.addEventListener("pointerup",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});joystickEl.addEventListener("pointercancel",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});
+joystickEl.addEventListener("pointerdown",e=>{if(touchJoystick||joystickPointer!==null)return;e.preventDefault();joystickPointer=e.pointerId;updateJoystick(e);try{joystickEl.setPointerCapture?.(e.pointerId)}catch(_){}},{passive:false});
+document.addEventListener("pointermove",e=>{if(e.pointerId===joystickPointer){e.preventDefault();updateJoystick(e)}},{capture:true,passive:false});
+document.addEventListener("pointerup",e=>{if(e.pointerId===joystickPointer)releaseJoystick()},{capture:true});
+document.addEventListener("pointercancel",e=>{if(e.pointerId===joystickPointer)releaseJoystick()},{capture:true});
 function findTouch(list,id){if(!list)return null;for(let i=0;i<list.length;i++){const p=list[i];if(id===undefined||p.identifier===id)return p}return null}
 function touchPoint(e,id){const p=findTouch(e.changedTouches,id)||findTouch(e.touches,id);return p?{clientX:p.clientX,clientY:p.clientY}:null}
 document.addEventListener("touchstart",e=>{if(joystickPointer!==null){e.preventDefault();return}if(!e.target.closest?.("#joystick"))return;const p=e.changedTouches?.[0];if(!p)return;e.preventDefault();touchJoystick=true;touchJoystickId=p.identifier;updateJoystick({clientX:p.clientX,clientY:p.clientY})},{capture:true,passive:false});
