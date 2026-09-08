@@ -8,9 +8,9 @@ const PaperAnimation = {
     const other=positions[name==='Bubu'?'Dudu':'Bubu'];
     const faceLeft=(other.x-p.x)*Math.cos(yaw)-(other.z-p.z)*Math.sin(yaw)<0;
     if(state.mode==='flowers'){
-      view='side';flip=faceLeft;action=name===player?'give':'receive';frame=Math.min(3,Math.floor(state.eventT/.45));
+      view='side';flip=faceLeft;action=name===player?'give':'receive';frame=Math.min(3,Math.floor(Math.max(0,state.eventT-.55)/.5));
     }else if(state.mode==='kiss'){
-      view='side';flip=faceLeft;action='kiss';frame=Math.min(3,Math.floor(state.eventT/.35));
+      view='side';flip=faceLeft;action='kiss';frame=Math.min(3,Math.floor(Math.max(0,state.eventT-.55)/.4));
     }else if(state.mode==='done'&&!p.moving&&state.eventT<2){
       view='front';action='happy';frame=0;
     }else if((state.mode==='ready'||state.mode==='done')&&name===partner&&!p.moving){

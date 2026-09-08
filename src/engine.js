@@ -174,6 +174,7 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
       for(const flower of chapter.flowers)if(!(state.collected||[]).includes(flower.id))billboard(textures.get('bouquetCut'),flower.x,heightAt(flower.x,flower.z)+.08,flower.z,.62,.82,false,yaw,-.08);
     }
     stats={};
+    if(pair)gl.disable(gl.DEPTH_TEST);
     for(const name of actorNames){
       const p=positions[name];
       const {view,flip,action,frame,key}=PaperAnimation.pose(name,p,positions,state,player,partner,yaw);
@@ -184,10 +185,15 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
       billboard(texture,p.x,renderedY,p.z,2.35,2.72,flip,yaw,0,turn);
       stats[name]={view,action,frame,flip,emotion:mood,y:renderedY,x:+p.x.toFixed(2),z:+p.z.toFixed(2)};
     }
+    if(pair)gl.enable(gl.DEPTH_TEST);
     if(['flowers','ready','kiss','done'].includes(state.mode)&&player){
-      const a=positions[player],b=positions[partner];let x=b.x+(a.x<b.x?-.61:.61),z=b.z+.13,y=heightAt(b.x,b.z)+.7;
-      if(state.mode==='flowers'){const k=Math.min(1,state.eventT/2.0),smooth=k*k*(3-2*k);x=a.x+(b.x-a.x)*smooth;z=a.z+(b.z-a.z)*smooth+.13;y=heightAt(x,z)+.65+Math.sin(k*Math.PI)*.4;}
-      billboard(textures.get('bouquetCut'),x,y,z,.86,1.08,false,yaw,-.1);
+      const a=positions[player],b=positions[partner],right={x:Math.cos(yaw),z:-Math.sin(yaw)};
+      const k=state.mode==='flowers'?Math.max(0,Math.min(1,(state.eventT-.55)/1.6)):1,smooth=k*k*(3-2*k);
+      const ax=a.x+right.x*.77,az=a.z+right.z*.77,bx=b.x+right.x*(state.mode==='kiss'?.25:-.72),bz=b.z+right.z*(state.mode==='kiss'?.25:-.72);
+      const x=ax+(bx-ax)*smooth,z=az+(bz-az)*smooth;
+      const y=heightAt(x,z)+.35+Math.sin(k*Math.PI)*.10;
+      // Hands and bouquet remain in the foreground of the profiles.
+      gl.disable(gl.DEPTH_TEST);billboard(textures.get('bouquetCut'),x,y,z,.60,.72,false,yaw,-.1);gl.enable(gl.DEPTH_TEST);
     }
     if(level===3&&state.flowers>state.gifted){
       const spots=state.giftSpots||[];for(let i=state.gifted;i<Math.min(spots.length,state.flowers);i++){const spot=spots[i];billboard(textures.get('bouquetCut'),spot.x,heightAt(spot.x,spot.z)+.08,spot.z,.62,.82,false,yaw,-.08);}

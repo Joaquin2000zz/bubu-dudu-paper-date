@@ -244,3 +244,7 @@ body[data-chapter="1"] #sky:after{animation:rainDrift 1.4s linear infinite}
 @media(prefers-reduced-motion:reduce){body[data-chapter="1"] #sky:after{animation:none}}
 
 body[data-chapter="1"] #toast{background:#29384a;color:#efdbc0;border-color:#7b8f9f}
+
+.dialogue{position:absolute;z-index:45;max-width:240px;width:max-content;padding:10px 14px;border:2px solid #957d6a;border-radius:17px;background:#fff9e9;color:#513b32;box-shadow:3px 4px #0002;pointer-events:none;transform:translate(-50%,-100%);opacity:0;transition:opacity .15s;font-size:13px;line-height:1.35}
+.dialogue.show{opacity:1}.dialogue strong{display:block;font-size:11px;color:#9b6470;margin-bottom:3px}.dialogue:after{content:"";position:absolute;bottom:-8px;left:50%;width:12px;height:12px;background:inherit;border-right:2px solid #957d6a;border-bottom:2px solid #957d6a;transform:rotate(45deg)}
+body[data-chapter="1"] .dialogue{background:#29384a;color:#eee3d4;border-color:#899bab}body[data-chapter="1"] .dialogue strong{color:#d6becb}

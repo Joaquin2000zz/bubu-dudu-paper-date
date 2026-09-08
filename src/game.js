@@ -53,6 +53,7 @@ function loadLevel(levelNumber){
   for(const p of Object.values(pos))resetActorState(p);
   pos[player].heading=0;pos[partner].heading=0;
   updateChapterUi();
+  say(player,levelNumber===1?`${partner}… está oscuro, pero voy a encontrarte.`:levelNumber===2?'Ya entra un poquito de luz. Estoy más cerca.':`¡${partner}! Por fin estamos juntos.`);
   if(levelNumber===3){stageState.mode="approach";quest.innerHTML='<span class="q on" data-q="approach">1 · ACERCATE</span><span class="q" data-q="flowers">2 · FLORES</span><span class="q" data-q="kiss">3 · BESO</span>';quest.style.display="flex";setQuest("approach");setPrompt(stageState.flowers>stageState.gifted?`Acercate a ${partner} · elegí un ramo 🌷`:`Acercate a ${partner} · ya no quedan ramos`);$("#travel").style.display="block";$("#travel").textContent="Seguir el caminito →"}
   else {stageState.mode="platform";quest.innerHTML=`<span class="q on">NIVEL ${levelNumber}/3</span><span class="q">RAMOS ${currentCollected()}/3</span><span class="q">META</span>`;quest.style.display="flex";setPrompt(`Nivel ${levelNumber}: juntá los 3 ramos y llegá a la bandera 🌷`);$("#travel").style.display="none";$("#travel").textContent=`Entrar al nivel ${levelNumber+1} →`}
 }
@@ -77,15 +78,23 @@ function petals(){
   if(reducedMotion)return;
   const p=el("div","petal");p.style.left=Math.random()*innerWidth+"px";p.style.top="-20px";p.style.setProperty("--x",`${(Math.random()-.5)*180}px`);p.style.setProperty("--d",`${4+Math.random()*3}s`);fx.appendChild(p);setTimeout(()=>p.remove(),7500)
 }
+const dialogue=el('div','dialogue');dialogue.setAttribute('role','status');dialogue.setAttribute('aria-live','polite');$('#app').appendChild(dialogue);let speaking=null;
+function say(name,text,kind='talk'){
+ speaking={name,text,until:performance.now()+3100};dialogue.replaceChildren();const label=el('strong');label.textContent=name;const words=el('span');words.textContent=text;dialogue.append(label,words);dialogue.classList.add('show');
+ babble(name,kind);
+}
+function updateDialogue(){if(!speaking||performance.now()>speaking.until||!player){dialogue.classList.remove('show');return}const a=pos[speaking.name],point=projectScreen(a.x,a.z,3.4);dialogue.style.left=Math.max(125,Math.min(innerWidth-125,point.x))+'px';dialogue.style.top=Math.max(innerWidth<600?220:150,Math.min(innerHeight-270,point.y-45))+'px';}
 function projectScreen(x,z,y=0){return engine?engine.project(x,y,z):{x:innerWidth/2,y:innerHeight/2};}
 function giveFlowers(){
   if(stageState.level!==3||!player||dist()>2.35||!["approach","ready","done"].includes(stageState.mode))return;
+  if(pos[player].jumpY>0)return;
   if(stageState.flowers<=stageState.gifted){setPrompt("Primero juntá ramos en los niveles anteriores 🌷",true);return}
-  stageState.gifted++;stageState.mode="flowers";stageState.eventT=0;face();setQuest("flowers");setPrompt("Entregando el ramo… 🌷",true);hearts(10);flowerChime();
+  autoWalk=false;releaseJoystick();say(player,"Estas flores son para vos.");stageState.gifted++;stageState.mode="flowers";stageState.eventT=0;face();setQuest("flowers");setPrompt("Entregando el ramo… 🌷",true);hearts(10);flowerChime();
 }
 function kiss(){
-  if(!player||!["ready","done"].includes(stageState.mode)||dist()>1.9)return;
-  stageState.mode="kiss";stageState.eventT=0;stageState.kisses++;face();setQuest("kiss");setPrompt("💋 ¡Mwah!",true);hearts(30);kissChime();
+  if(!player||!["ready","done"].includes(stageState.mode)||dist()>2.35)return;
+  if(pos[player].jumpY>0)return;
+  autoWalk=false;releaseJoystick();say(partner,"Vení… te extrañé mucho.");stageState.mode="kiss";stageState.eventT=0;stageState.kisses++;face();setQuest("kiss");setPrompt("💋 ¡Mwah!",true);hearts(30);kissChime();
 
   toast.textContent=stageState.kisses===1?"💗 PRIMER BESO 💗":`💗 ${stageState.kisses} BESOS 💗`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),900);
 }
@@ -94,6 +103,19 @@ function kiss(){
 let ac=null,musicTimer=null,note=0;const melody=[523.25,659.25,783.99,659.25,587.33,698.46,783.99,880,783.99,659.25,587.33,523.25];
 function audio(){try{ac||=new (window.AudioContext||window.webkitAudioContext)();ac.resume?.();return ac}catch{return null}}
 function tone(f,d=.18,v=.025,delay=0,type="sine"){if(!stageState.music)return;const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+delay;o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.03)}
+// Original procedural babble: short consonant attacks and changing vowel formants.
+function babble(name,kind='talk'){
+ if(!stageState.music)return;const a=audio();if(!a)return;
+ const pitch=name==='Bubu'?510:340,pattern=kind==='kiss'?[.9,1.1]:[1,1.12,1,.92,1.16,.85];
+ pattern.forEach((p,i)=>{
+  const t=a.currentTime+i*.135,source=a.createOscillator(),envelope=a.createGain();
+  source.type='sawtooth';source.frequency.setValueAtTime(pitch*p,t);source.frequency.exponentialRampToValueAtTime(pitch*p*.8,t+.12);
+  envelope.gain.setValueAtTime(0,t);envelope.gain.linearRampToValueAtTime(.10,t+.014);envelope.gain.exponentialRampToValueAtTime(.001,t+.12);envelope.connect(a.destination);
+  const vowels=i%3===2?[430,1000,2450]:[950,1600,2900];
+  const filters=vowels.map((f,j)=>{const filter=a.createBiquadFilter(),gain=a.createGain();filter.type='bandpass';filter.frequency.value=f;filter.Q.value=5;gain.gain.value=[1,.5,.18][j];source.connect(filter);filter.connect(gain);gain.connect(envelope);return [filter,gain]});
+  source.start(t);source.stop(t+.14);source.onended=()=>{source.disconnect();envelope.disconnect();for(const [f,g] of filters){f.disconnect();g.disconnect()}};
+ });
+}
 function startMusic(){audio();if(musicTimer)return;musicTimer=setInterval(()=>{if(!stageState.music||stageState.mode==="menu")return;const tune=stageState.level===1?[220,261.63,293.66,261.63,196,233.08,220,174.61]:stageState.level===2?[293.66,349.23,440,392,349.23,329.63,293.66,261.63]:melody;const n=tune[note++%tune.length];tone(n,.3,.012);tone(n/2,.38,.006,.02,"triangle")},440)}
 function flowerChime(){tone(659,.17,.045);tone(784,.2,.042,.1);tone(988,.3,.038,.2)}
 function kissChime(){tone(784,.14,.045);tone(1047,.18,.04,.08);tone(1319,.25,.035,.16)}
@@ -119,8 +141,8 @@ document.addEventListener("dblclick",e=>{if(e.target.closest?.("#mobile,#cameraC
 $("#menuButton").onclick=menuBack;
 function advanceLevel(){if(stageState.level>=3)return;if(currentCollected()<3){setPrompt(`Todavía faltan ${3-currentCollected()} ramos en este nivel 🌷`,true);return}loadLevel(stageState.level+1);hearts(12);}
 function jump(){
-  if(stageState.level>=3||!player||stageState.mode!=="platform"||(pos[player].jumpY||0)>0.02)return;
-  pos[player].jumpBase=PaperWorld.supportAt(pos[player].x,pos[player].z);pos[player].jumpV=5.0;pos[player].jumpY=.03;setPrompt("¡Saltá para pasar los obstáculos!",true);
+  if(!player||!["platform","approach","ready","done"].includes(stageState.mode)||(pos[player].jumpY||0)>0.02)return;
+  pos[player].jumpBase=PaperWorld.supportAt(pos[player].x,pos[player].z);pos[player].jumpV=5.0;pos[player].jumpY=.03;
 }
 $("#travel").onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.level===3)autoWalk=true};
 prompt.onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.mode==="approach"||stageState.mode==="ready"||stageState.mode==="done")giveFlowers();else kiss()};
@@ -180,7 +202,7 @@ function updateMobs(dt,t){
 }
 function respawn(){const c=currentChapter(),checkpoint=stageState.checkpoint||c.start;Object.assign(pos[player],{x:checkpoint.x,z:checkpoint.z,jumpY:0,jumpV:0});pos[player].moving=false;stageState.hitCooldown=1.4;toast.textContent=stageState.checkpoint?'De vuelta al último ramo':'Intentá de nuevo · esperá el momento';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1300);}
 function collectNearbyFlowers(){
-  const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){stageState.checkpoint={x:f.x,z:f.z};stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
+  const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){say(player,stageState.flowers<2?"Una flor para vos… me siento un poquito mejor.":"Otro ramo. ¡Ya falta menos!");stageState.checkpoint={x:f.x,z:f.z};stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
 }
 function updatePlatform(dt,t){
   stageState.hitCooldown=Math.max(0,stageState.hitCooldown-dt);updateMobs(dt,t);
@@ -204,6 +226,16 @@ function update(dt,t){
   stageState.eventT+=dt;
   if(stageState.level<3){updatePlatform(dt,t);return;}
   const locked=["flowers","kiss"].includes(stageState.mode);
+  const actor=pos[player];if(actor.jumpY>0||actor.jumpV>0){actor.jumpY+=actor.jumpV*dt;actor.jumpV-=13.5*dt;if(actor.jumpY<=0){actor.jumpY=0;actor.jumpV=0;}}
+  if(locked){
+    // Both paper profiles share a stage and stay side by side relative to the camera.
+    const right={x:Math.cos(engine.yaw),z:-Math.sin(engine.yaw)},half=stageState.mode==='kiss'?1.025:1.1;
+    const q=stageState.eventT>.55?1:1-Math.exp(-dt*10);
+    for(const [name,side] of [[player,-1],[partner,1]]){
+      const a=pos[name],x=side*half*right.x,z=-6.55+side*half*right.z;
+      a.x+=(x-a.x)*q;a.z+=(z-a.z)*q;a.jumpY=0;a.jumpV=0;a.moving=false;
+    }
+  }
   let dx=0,dz=0,moving=false;
   if(!locked){
     dx=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0);
@@ -227,29 +259,28 @@ function update(dt,t){
     if(dist()<2.35){if(!moving)face();setPrompt(stageState.flowers>stageState.gifted?"Presioná E para regalar un ramo 🌷":"Ya no quedan ramos; volvé a los niveles anteriores 🌷")}else setPrompt(`Acercate a ${partner} · ${dist().toFixed(1)} m 💕`);
   }
   if(stageState.mode==="flowers"){
+    if(stageState.eventT>1.4&&stageState.eventT-dt<=1.4)say(partner,"¡Son hermosas! Gracias, mi amor.");
     face();
-    if(stageState.eventT>2.25){
+    if(stageState.eventT>3.1){
       stageState.mode="ready";stageState.eventT=0;setQuest("kiss");
       setPrompt("Ahora acercate un poquito y presioná Espacio 💋",true);
     }
   }
   if(stageState.mode==="ready"||stageState.mode==="done"){
     if(!moving)face();
-    if(dist()<1.9)setPrompt(stageState.mode==="done"?`${stageState.dedication} · Espacio = otro beso 💋`:"Presioná Espacio para besar 💋");
+    if(dist()<2.35)setPrompt(stageState.mode==="done"?`${stageState.dedication} · Espacio = otro beso 💋`:"Presioná Espacio para besar 💋");
     else setPrompt(`Acercate un poquito más · ${dist().toFixed(1)} m`);
   }
   if(stageState.mode==="kiss"){
-    face();let vx=pos[partner].x-pos[player].x,vz=pos[partner].z-pos[player].z,l=Math.hypot(vx,vz)||1;vx/=l;vz/=l;
-    const mx=(pos[player].x+pos[partner].x)/2,mz=(pos[player].z+pos[partner].z)/2,q=Math.min(1,dt*5);
-    Object.assign(pos[player],engine.move(pos[player],pos[player].x+(mx-vx*.64-pos[player].x)*q,pos[player].z+(mz-vz*.64-pos[player].z)*q));
-    Object.assign(pos[partner],engine.move(pos[partner],pos[partner].x+(mx+vx*.64-pos[partner].x)*q,pos[partner].z+(mz+vz*.64-pos[partner].z)*q));
-    if(stageState.eventT>2.0){quest.querySelectorAll(".q").forEach(q=>q.className="q done");stageState.mode="done";stageState.eventT=0;setPrompt(`${stageState.dedication} · ${stageState.kisses} ${stageState.kisses===1?"beso":"besos"} 💗`,true)}
+    if(stageState.eventT>1.5&&stageState.eventT-dt<=1.5)say(player,"¡Muá! Te quiero mucho.","kiss");
+    face();
+    if(stageState.eventT>2.8){quest.querySelectorAll(".q").forEach(q=>q.className="q done");stageState.mode="done";stageState.eventT=0;setPrompt(`${stageState.dedication} · ${stageState.kisses} ${stageState.kisses===1?"beso":"besos"} 💗`,true)}
   }
   $("#travel").style.display=dist()>2.35&&!locked?"block":"none";
 
   hud.innerHTML=`<strong>Nivel 3/3 · ${stageState.chosen}</strong> · Ramos ${stageState.flowers-stageState.gifted}/${stageState.flowers}<br>${escapeHtml(stageState.dedication)}<br>WASD/flechas · E ramo · Espacio beso · Besos: <strong>${stageState.kisses}</strong> 💋`;
 }
-function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(rendererReady){update(dt,now/1000);engine.render(dt,now/1000,stageState,pos,player,partner)}requestAnimationFrame(loop)}
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(rendererReady){update(dt,now/1000);engine.render(dt,now/1000,stageState,pos,player,partner);updateDialogue()}requestAnimationFrame(loop)}
 window.__BUBU_DUDU_PAPER_DATE__={start,reset,menu:menuBack,giveFlowers,kiss,state:stageState,debugNear(){if(player&&partner){pos[player].x=pos[partner].x-1.55;pos[player].z=pos[partner].z+.18;face();}}};
 if(new URLSearchParams(location.search).has('test'))Object.assign(window.__BUBU_DUDU_PAPER_DATE__,{loadLevel,positions:pos,jump});
 function cameraButton(button,amount){

@@ -53,3 +53,6 @@ El valle de las cartas perdidas transcurre bajo lluvia y luz de luna; el bosque 
 Prueba táctil de regresión: `node tests/mobile-browser.cjs` con Playwright instalado (o `PLAYWRIGHT_MODULE` apuntando a su módulo), servidor en el puerto 8765 y Edge disponible. Verifica toques reales mediante CDP, joystick y salto simultáneos, embestidas, puntos de retorno, el salto sobre el vacío y controles en el jardín. `BROWSER_CHANNEL` permite elegir otro canal de Chromium. Las capturas se guardan en `tests/artifacts/`. La inspección de posiciones se habilita únicamente con `?test=1`.
 
 Para comprobar recuperación del joystick después de interrupciones: `node tests/joystick-browser.cjs`, con la misma configuración de Playwright. Cubre pérdida de captura, cancelación del toque, salida de la página, cambio de tamaño, cambio de nivel, ausencia de `pointerup` y un toque nuevo después de quedar un puntero antiguo activo.
+
+
+El jardín final permite saltar con J/X o el botón SALTAR. Durante la entrega y el beso se usa una formación lateral y dibujos de perfil, con el ramo en las manos y ambos personajes visibles incluso con la cámara girada. Hay diálogos de ambos personajes, acompañados por vocalizaciones sintetizadas (ver AUDIO_REFERENCES.md). `node tests/couple-browser.cjs` comprueba saltos, entrega, beso y encuadre.

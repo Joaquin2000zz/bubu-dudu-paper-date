@@ -250,6 +250,10 @@ body[data-chapter="1"] #sky:after{animation:rainDrift 1.4s linear infinite}
 @media(prefers-reduced-motion:reduce){body[data-chapter="1"] #sky:after{animation:none}}
 
 body[data-chapter="1"] #toast{background:#29384a;color:#efdbc0;border-color:#7b8f9f}
+
+.dialogue{position:absolute;z-index:45;max-width:240px;width:max-content;padding:10px 14px;border:2px solid #957d6a;border-radius:17px;background:#fff9e9;color:#513b32;box-shadow:3px 4px #0002;pointer-events:none;transform:translate(-50%,-100%);opacity:0;transition:opacity .15s;font-size:13px;line-height:1.35}
+.dialogue.show{opacity:1}.dialogue strong{display:block;font-size:11px;color:#9b6470;margin-bottom:3px}.dialogue:after{content:"";position:absolute;bottom:-8px;left:50%;width:12px;height:12px;background:inherit;border-right:2px solid #957d6a;border-bottom:2px solid #957d6a;transform:rotate(45deg)}
+body[data-chapter="1"] .dialogue{background:#29384a;color:#eee3d4;border-color:#899bab}body[data-chapter="1"] .dialogue strong{color:#d6becb}
 </style>
 </head>
 <body>
@@ -403,6 +407,21 @@ body[data-chapter="1"] #toast{background:#29384a;color:#efdbc0;border-color:#7b8
     const walk=action==='walk',phase=frame/8*Math.PI*2,step=walk?Math.sin(phase):0,bob=walk?Math.abs(Math.sin(phase))*4:0;
     const giving=action==='give',receive=action==='receive',kissing=action==='kiss',happy=action==='happy'||emotion==='happy';
     const arm=giving?frame/3:receive?1:0,lean=kissing?frame*2.5:0;
+    if(view==='side'&&(giving||receive||kissing)){
+      const extend=kissing?.6:giving?frame/3:1;
+      return `<g stroke="${dark}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+       <ellipse cx="96" cy="275" rx="18" ry="12" fill="${panda?ear:fur}"/><path d="M85 192Q67 231 78 260Q84 277 119 273H156Q186 272 181 241L168 196" fill="${fur}"/><ellipse cx="165" cy="275" rx="18" ry="12" fill="${panda?ear:fur}"/>
+       <circle cx="65" cy="68" r="23" fill="${ear}"/>${panda?'':`<circle cx="65" cy="68" r="12" fill="#694331" stroke="none"/>`}
+       <path d="M126 44Q62 37 43 85Q29 117 36 167Q40 197 82 204H154Q191 205 209 185Q239 180 239 161Q239 148 219 141L211 103Q202 56 160 47Z" fill="${fur}"/>
+       <circle cx="166" cy="65" r="19" fill="${ear}"/>${panda?'':`<circle cx="166" cy="65" r="9" fill="#694331" stroke="none"/>`}
+       <path d="M163 139q10 -10 20 0" fill="none" stroke-width="4"/>
+       <ellipse cx="182" cy="172" rx="17" ry="14" fill="${cheek}" stroke="none"/>
+       <ellipse cx="220" cy="151" rx="5" ry="4" fill="${dark}" stroke="none"/>
+       ${kissing?'<path d="M229 162q14 -4 15 2l-9 3 9 3q-2 6 -15 0" fill="none" stroke-width="3.5"/>':'<path d="M221 166q9 7 14 0" fill="none" stroke-width="3.5"/>'}
+       ${panda?'<path d="M116 208l6 13 9 -5 11 6 8 -16" fill="#492d27" stroke="none"/>':''}
+       <path data-part="arm" d="M153 220Q${174+extend*32} ${224-extend*10} ${184+extend*45} ${225-extend*14}Q${203+extend*35} ${241-extend*13} ${178+extend*30} ${243-extend*7}L150 239" fill="${fur}"/>
+      </g>`;
+    }
     const foot=(x,y,angle)=>`<g transform="rotate(${angle} ${x} ${y})"><ellipse cx="${x}" cy="${y}" rx="18" ry="12" fill="${panda?'#492d27':fur}"/></g>`;
     let body=`<g stroke="${dark}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(${lean} 130 270)">`;
     if(view==='side'){
@@ -455,9 +474,9 @@ const PaperAnimation = {
     const other=positions[name==='Bubu'?'Dudu':'Bubu'];
     const faceLeft=(other.x-p.x)*Math.cos(yaw)-(other.z-p.z)*Math.sin(yaw)<0;
     if(state.mode==='flowers'){
-      view='side';flip=faceLeft;action=name===player?'give':'receive';frame=Math.min(3,Math.floor(state.eventT/.45));
+      view='side';flip=faceLeft;action=name===player?'give':'receive';frame=Math.min(3,Math.floor(Math.max(0,state.eventT-.55)/.5));
     }else if(state.mode==='kiss'){
-      view='side';flip=faceLeft;action='kiss';frame=Math.min(3,Math.floor(state.eventT/.35));
+      view='side';flip=faceLeft;action='kiss';frame=Math.min(3,Math.floor(Math.max(0,state.eventT-.55)/.4));
     }else if(state.mode==='done'&&!p.moving&&state.eventT<2){
       view='front';action='happy';frame=0;
     }else if((state.mode==='ready'||state.mode==='done')&&name===partner&&!p.moving){
@@ -714,6 +733,7 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
       for(const flower of chapter.flowers)if(!(state.collected||[]).includes(flower.id))billboard(textures.get('bouquetCut'),flower.x,heightAt(flower.x,flower.z)+.08,flower.z,.62,.82,false,yaw,-.08);
     }
     stats={};
+    if(pair)gl.disable(gl.DEPTH_TEST);
     for(const name of actorNames){
       const p=positions[name];
       const {view,flip,action,frame,key}=PaperAnimation.pose(name,p,positions,state,player,partner,yaw);
@@ -724,10 +744,15 @@ function createPaperEngine(canvas, symbols, reducedMotion) {
       billboard(texture,p.x,renderedY,p.z,2.35,2.72,flip,yaw,0,turn);
       stats[name]={view,action,frame,flip,emotion:mood,y:renderedY,x:+p.x.toFixed(2),z:+p.z.toFixed(2)};
     }
+    if(pair)gl.enable(gl.DEPTH_TEST);
     if(['flowers','ready','kiss','done'].includes(state.mode)&&player){
-      const a=positions[player],b=positions[partner];let x=b.x+(a.x<b.x?-.61:.61),z=b.z+.13,y=heightAt(b.x,b.z)+.7;
-      if(state.mode==='flowers'){const k=Math.min(1,state.eventT/2.0),smooth=k*k*(3-2*k);x=a.x+(b.x-a.x)*smooth;z=a.z+(b.z-a.z)*smooth+.13;y=heightAt(x,z)+.65+Math.sin(k*Math.PI)*.4;}
-      billboard(textures.get('bouquetCut'),x,y,z,.86,1.08,false,yaw,-.1);
+      const a=positions[player],b=positions[partner],right={x:Math.cos(yaw),z:-Math.sin(yaw)};
+      const k=state.mode==='flowers'?Math.max(0,Math.min(1,(state.eventT-.55)/1.6)):1,smooth=k*k*(3-2*k);
+      const ax=a.x+right.x*.77,az=a.z+right.z*.77,bx=b.x+right.x*(state.mode==='kiss'?.25:-.72),bz=b.z+right.z*(state.mode==='kiss'?.25:-.72);
+      const x=ax+(bx-ax)*smooth,z=az+(bz-az)*smooth;
+      const y=heightAt(x,z)+.35+Math.sin(k*Math.PI)*.10;
+      // Hands and bouquet remain in the foreground of the profiles.
+      gl.disable(gl.DEPTH_TEST);billboard(textures.get('bouquetCut'),x,y,z,.60,.72,false,yaw,-.1);gl.enable(gl.DEPTH_TEST);
     }
     if(level===3&&state.flowers>state.gifted){
       const spots=state.giftSpots||[];for(let i=state.gifted;i<Math.min(spots.length,state.flowers);i++){const spot=spots[i];billboard(textures.get('bouquetCut'),spot.x,heightAt(spot.x,spot.z)+.08,spot.z,.62,.82,false,yaw,-.08);}
@@ -794,6 +819,7 @@ function loadLevel(levelNumber){
   for(const p of Object.values(pos))resetActorState(p);
   pos[player].heading=0;pos[partner].heading=0;
   updateChapterUi();
+  say(player,levelNumber===1?`${partner}… está oscuro, pero voy a encontrarte.`:levelNumber===2?'Ya entra un poquito de luz. Estoy más cerca.':`¡${partner}! Por fin estamos juntos.`);
   if(levelNumber===3){stageState.mode="approach";quest.innerHTML='<span class="q on" data-q="approach">1 · ACERCATE</span><span class="q" data-q="flowers">2 · FLORES</span><span class="q" data-q="kiss">3 · BESO</span>';quest.style.display="flex";setQuest("approach");setPrompt(stageState.flowers>stageState.gifted?`Acercate a ${partner} · elegí un ramo 🌷`:`Acercate a ${partner} · ya no quedan ramos`);$("#travel").style.display="block";$("#travel").textContent="Seguir el caminito →"}
   else {stageState.mode="platform";quest.innerHTML=`<span class="q on">NIVEL ${levelNumber}/3</span><span class="q">RAMOS ${currentCollected()}/3</span><span class="q">META</span>`;quest.style.display="flex";setPrompt(`Nivel ${levelNumber}: juntá los 3 ramos y llegá a la bandera 🌷`);$("#travel").style.display="none";$("#travel").textContent=`Entrar al nivel ${levelNumber+1} →`}
 }
@@ -818,15 +844,23 @@ function petals(){
   if(reducedMotion)return;
   const p=el("div","petal");p.style.left=Math.random()*innerWidth+"px";p.style.top="-20px";p.style.setProperty("--x",`${(Math.random()-.5)*180}px`);p.style.setProperty("--d",`${4+Math.random()*3}s`);fx.appendChild(p);setTimeout(()=>p.remove(),7500)
 }
+const dialogue=el('div','dialogue');dialogue.setAttribute('role','status');dialogue.setAttribute('aria-live','polite');$('#app').appendChild(dialogue);let speaking=null;
+function say(name,text,kind='talk'){
+ speaking={name,text,until:performance.now()+3100};dialogue.replaceChildren();const label=el('strong');label.textContent=name;const words=el('span');words.textContent=text;dialogue.append(label,words);dialogue.classList.add('show');
+ babble(name,kind);
+}
+function updateDialogue(){if(!speaking||performance.now()>speaking.until||!player){dialogue.classList.remove('show');return}const a=pos[speaking.name],point=projectScreen(a.x,a.z,3.4);dialogue.style.left=Math.max(125,Math.min(innerWidth-125,point.x))+'px';dialogue.style.top=Math.max(innerWidth<600?220:150,Math.min(innerHeight-270,point.y-45))+'px';}
 function projectScreen(x,z,y=0){return engine?engine.project(x,y,z):{x:innerWidth/2,y:innerHeight/2};}
 function giveFlowers(){
   if(stageState.level!==3||!player||dist()>2.35||!["approach","ready","done"].includes(stageState.mode))return;
+  if(pos[player].jumpY>0)return;
   if(stageState.flowers<=stageState.gifted){setPrompt("Primero juntá ramos en los niveles anteriores 🌷",true);return}
-  stageState.gifted++;stageState.mode="flowers";stageState.eventT=0;face();setQuest("flowers");setPrompt("Entregando el ramo… 🌷",true);hearts(10);flowerChime();
+  autoWalk=false;releaseJoystick();say(player,"Estas flores son para vos.");stageState.gifted++;stageState.mode="flowers";stageState.eventT=0;face();setQuest("flowers");setPrompt("Entregando el ramo… 🌷",true);hearts(10);flowerChime();
 }
 function kiss(){
-  if(!player||!["ready","done"].includes(stageState.mode)||dist()>1.9)return;
-  stageState.mode="kiss";stageState.eventT=0;stageState.kisses++;face();setQuest("kiss");setPrompt("💋 ¡Mwah!",true);hearts(30);kissChime();
+  if(!player||!["ready","done"].includes(stageState.mode)||dist()>2.35)return;
+  if(pos[player].jumpY>0)return;
+  autoWalk=false;releaseJoystick();say(partner,"Vení… te extrañé mucho.");stageState.mode="kiss";stageState.eventT=0;stageState.kisses++;face();setQuest("kiss");setPrompt("💋 ¡Mwah!",true);hearts(30);kissChime();
 
   toast.textContent=stageState.kisses===1?"💗 PRIMER BESO 💗":`💗 ${stageState.kisses} BESOS 💗`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),900);
 }
@@ -835,6 +869,19 @@ function kiss(){
 let ac=null,musicTimer=null,note=0;const melody=[523.25,659.25,783.99,659.25,587.33,698.46,783.99,880,783.99,659.25,587.33,523.25];
 function audio(){try{ac||=new (window.AudioContext||window.webkitAudioContext)();ac.resume?.();return ac}catch{return null}}
 function tone(f,d=.18,v=.025,delay=0,type="sine"){if(!stageState.music)return;const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+delay;o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.03)}
+// Original procedural babble: short consonant attacks and changing vowel formants.
+function babble(name,kind='talk'){
+ if(!stageState.music)return;const a=audio();if(!a)return;
+ const pitch=name==='Bubu'?510:340,pattern=kind==='kiss'?[.9,1.1]:[1,1.12,1,.92,1.16,.85];
+ pattern.forEach((p,i)=>{
+  const t=a.currentTime+i*.135,source=a.createOscillator(),envelope=a.createGain();
+  source.type='sawtooth';source.frequency.setValueAtTime(pitch*p,t);source.frequency.exponentialRampToValueAtTime(pitch*p*.8,t+.12);
+  envelope.gain.setValueAtTime(0,t);envelope.gain.linearRampToValueAtTime(.10,t+.014);envelope.gain.exponentialRampToValueAtTime(.001,t+.12);envelope.connect(a.destination);
+  const vowels=i%3===2?[430,1000,2450]:[950,1600,2900];
+  const filters=vowels.map((f,j)=>{const filter=a.createBiquadFilter(),gain=a.createGain();filter.type='bandpass';filter.frequency.value=f;filter.Q.value=5;gain.gain.value=[1,.5,.18][j];source.connect(filter);filter.connect(gain);gain.connect(envelope);return [filter,gain]});
+  source.start(t);source.stop(t+.14);source.onended=()=>{source.disconnect();envelope.disconnect();for(const [f,g] of filters){f.disconnect();g.disconnect()}};
+ });
+}
 function startMusic(){audio();if(musicTimer)return;musicTimer=setInterval(()=>{if(!stageState.music||stageState.mode==="menu")return;const tune=stageState.level===1?[220,261.63,293.66,261.63,196,233.08,220,174.61]:stageState.level===2?[293.66,349.23,440,392,349.23,329.63,293.66,261.63]:melody;const n=tune[note++%tune.length];tone(n,.3,.012);tone(n/2,.38,.006,.02,"triangle")},440)}
 function flowerChime(){tone(659,.17,.045);tone(784,.2,.042,.1);tone(988,.3,.038,.2)}
 function kissChime(){tone(784,.14,.045);tone(1047,.18,.04,.08);tone(1319,.25,.035,.16)}
@@ -860,8 +907,8 @@ document.addEventListener("dblclick",e=>{if(e.target.closest?.("#mobile,#cameraC
 $("#menuButton").onclick=menuBack;
 function advanceLevel(){if(stageState.level>=3)return;if(currentCollected()<3){setPrompt(`Todavía faltan ${3-currentCollected()} ramos en este nivel 🌷`,true);return}loadLevel(stageState.level+1);hearts(12);}
 function jump(){
-  if(stageState.level>=3||!player||stageState.mode!=="platform"||(pos[player].jumpY||0)>0.02)return;
-  pos[player].jumpBase=PaperWorld.supportAt(pos[player].x,pos[player].z);pos[player].jumpV=5.0;pos[player].jumpY=.03;setPrompt("¡Saltá para pasar los obstáculos!",true);
+  if(!player||!["platform","approach","ready","done"].includes(stageState.mode)||(pos[player].jumpY||0)>0.02)return;
+  pos[player].jumpBase=PaperWorld.supportAt(pos[player].x,pos[player].z);pos[player].jumpV=5.0;pos[player].jumpY=.03;
 }
 $("#travel").onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.level===3)autoWalk=true};
 prompt.onclick=()=>{if(stageState.level<3&&stageState.mode==="exit")advanceLevel();else if(stageState.mode==="approach"||stageState.mode==="ready"||stageState.mode==="done")giveFlowers();else kiss()};
@@ -921,7 +968,7 @@ function updateMobs(dt,t){
 }
 function respawn(){const c=currentChapter(),checkpoint=stageState.checkpoint||c.start;Object.assign(pos[player],{x:checkpoint.x,z:checkpoint.z,jumpY:0,jumpV:0});pos[player].moving=false;stageState.hitCooldown=1.4;toast.textContent=stageState.checkpoint?'De vuelta al último ramo':'Intentá de nuevo · esperá el momento';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1300);}
 function collectNearbyFlowers(){
-  const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){stageState.checkpoint={x:f.x,z:f.z};stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
+  const c=currentChapter();for(const f of c.flowers){if(stageState.collected.includes(f.id))continue;if(Math.hypot(pos[player].x-f.x,pos[player].z-f.z)<.85){say(player,stageState.flowers<2?"Una flor para vos… me siento un poquito mejor.":"Otro ramo. ¡Ya falta menos!");stageState.checkpoint={x:f.x,z:f.z};stageState.collected.push(f.id);stageState.flowers=stageState.collected.length;toast.textContent=`🌷 RAMO ${stageState.flowers}`;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),800);flowerChime();}}
 }
 function updatePlatform(dt,t){
   stageState.hitCooldown=Math.max(0,stageState.hitCooldown-dt);updateMobs(dt,t);
@@ -945,6 +992,16 @@ function update(dt,t){
   stageState.eventT+=dt;
   if(stageState.level<3){updatePlatform(dt,t);return;}
   const locked=["flowers","kiss"].includes(stageState.mode);
+  const actor=pos[player];if(actor.jumpY>0||actor.jumpV>0){actor.jumpY+=actor.jumpV*dt;actor.jumpV-=13.5*dt;if(actor.jumpY<=0){actor.jumpY=0;actor.jumpV=0;}}
+  if(locked){
+    // Both paper profiles share a stage and stay side by side relative to the camera.
+    const right={x:Math.cos(engine.yaw),z:-Math.sin(engine.yaw)},half=stageState.mode==='kiss'?1.025:1.1;
+    const q=stageState.eventT>.55?1:1-Math.exp(-dt*10);
+    for(const [name,side] of [[player,-1],[partner,1]]){
+      const a=pos[name],x=side*half*right.x,z=-6.55+side*half*right.z;
+      a.x+=(x-a.x)*q;a.z+=(z-a.z)*q;a.jumpY=0;a.jumpV=0;a.moving=false;
+    }
+  }
   let dx=0,dz=0,moving=false;
   if(!locked){
     dx=(key.has("d")||key.has("arrowright")?1:0)-(key.has("a")||key.has("arrowleft")?1:0);
@@ -968,29 +1025,28 @@ function update(dt,t){
     if(dist()<2.35){if(!moving)face();setPrompt(stageState.flowers>stageState.gifted?"Presioná E para regalar un ramo 🌷":"Ya no quedan ramos; volvé a los niveles anteriores 🌷")}else setPrompt(`Acercate a ${partner} · ${dist().toFixed(1)} m 💕`);
   }
   if(stageState.mode==="flowers"){
+    if(stageState.eventT>1.4&&stageState.eventT-dt<=1.4)say(partner,"¡Son hermosas! Gracias, mi amor.");
     face();
-    if(stageState.eventT>2.25){
+    if(stageState.eventT>3.1){
       stageState.mode="ready";stageState.eventT=0;setQuest("kiss");
       setPrompt("Ahora acercate un poquito y presioná Espacio 💋",true);
     }
   }
   if(stageState.mode==="ready"||stageState.mode==="done"){
     if(!moving)face();
-    if(dist()<1.9)setPrompt(stageState.mode==="done"?`${stageState.dedication} · Espacio = otro beso 💋`:"Presioná Espacio para besar 💋");
+    if(dist()<2.35)setPrompt(stageState.mode==="done"?`${stageState.dedication} · Espacio = otro beso 💋`:"Presioná Espacio para besar 💋");
     else setPrompt(`Acercate un poquito más · ${dist().toFixed(1)} m`);
   }
   if(stageState.mode==="kiss"){
-    face();let vx=pos[partner].x-pos[player].x,vz=pos[partner].z-pos[player].z,l=Math.hypot(vx,vz)||1;vx/=l;vz/=l;
-    const mx=(pos[player].x+pos[partner].x)/2,mz=(pos[player].z+pos[partner].z)/2,q=Math.min(1,dt*5);
-    Object.assign(pos[player],engine.move(pos[player],pos[player].x+(mx-vx*.64-pos[player].x)*q,pos[player].z+(mz-vz*.64-pos[player].z)*q));
-    Object.assign(pos[partner],engine.move(pos[partner],pos[partner].x+(mx+vx*.64-pos[partner].x)*q,pos[partner].z+(mz+vz*.64-pos[partner].z)*q));
-    if(stageState.eventT>2.0){quest.querySelectorAll(".q").forEach(q=>q.className="q done");stageState.mode="done";stageState.eventT=0;setPrompt(`${stageState.dedication} · ${stageState.kisses} ${stageState.kisses===1?"beso":"besos"} 💗`,true)}
+    if(stageState.eventT>1.5&&stageState.eventT-dt<=1.5)say(player,"¡Muá! Te quiero mucho.","kiss");
+    face();
+    if(stageState.eventT>2.8){quest.querySelectorAll(".q").forEach(q=>q.className="q done");stageState.mode="done";stageState.eventT=0;setPrompt(`${stageState.dedication} · ${stageState.kisses} ${stageState.kisses===1?"beso":"besos"} 💗`,true)}
   }
   $("#travel").style.display=dist()>2.35&&!locked?"block":"none";
 
   hud.innerHTML=`<strong>Nivel 3/3 · ${stageState.chosen}</strong> · Ramos ${stageState.flowers-stageState.gifted}/${stageState.flowers}<br>${escapeHtml(stageState.dedication)}<br>WASD/flechas · E ramo · Espacio beso · Besos: <strong>${stageState.kisses}</strong> 💋`;
 }
-function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(rendererReady){update(dt,now/1000);engine.render(dt,now/1000,stageState,pos,player,partner)}requestAnimationFrame(loop)}
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(rendererReady){update(dt,now/1000);engine.render(dt,now/1000,stageState,pos,player,partner);updateDialogue()}requestAnimationFrame(loop)}
 window.__BUBU_DUDU_PAPER_DATE__={start,reset,menu:menuBack,giveFlowers,kiss,state:stageState,debugNear(){if(player&&partner){pos[player].x=pos[partner].x-1.55;pos[player].z=pos[partner].z+.18;face();}}};
 if(new URLSearchParams(location.search).has('test'))Object.assign(window.__BUBU_DUDU_PAPER_DATE__,{loadLevel,positions:pos,jump});
 function cameraButton(button,amount){
