@@ -10,8 +10,11 @@ test('Game no longer substitutes action animations with remote GIFs or photo ove
  const js=fs.readFileSync('src/game.js','utf8');assert(!js.includes('cinematicShow'));assert(!js.includes('media.tenor'));assert(!js.includes('pinimg'));
 });
 test('Mobile controls cannot select text or trigger browser zoom gestures',()=>{
- const css=fs.readFileSync('styles/main.css','utf8'),js=fs.readFileSync('src/game.js','utf8');
+ const html=fs.readFileSync('index.html','utf8'),css=fs.readFileSync('styles/main.css','utf8'),js=fs.readFileSync('src/game.js','utf8');
+ assert(html.includes('maximum-scale=1')&&html.includes('user-scalable=no'));
+ assert(css.includes('#app,#app *')&&css.includes('overscroll-behavior:none'));
  assert(css.includes('#cameraControls button{')&&css.includes('touch-action:none'));
  assert(css.includes('user-select:none')&&css.includes('-webkit-user-select:none'));
- assert(js.includes('selectstart')&&js.includes('contextmenu'));
+ assert(js.includes('selectstart')&&js.includes('contextmenu')&&js.includes('dblclick')&&js.includes('gesturestart'));
+ assert(js.includes('function cameraButton')&&js.includes('pointerdown'));
 });

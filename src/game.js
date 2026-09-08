@@ -98,11 +98,14 @@ addEventListener("keyup",e=>key.delete(e.key.toLowerCase()));
 addEventListener("blur",()=>{key.clear();autoWalk=false});
 document.addEventListener("visibilitychange",()=>{if(document.hidden){key.clear();autoWalk=false}});
 document.addEventListener("selectstart",e=>{if(!e.target.matches?.("input,textarea,[contenteditable=true]"))e.preventDefault()},{passive:false});
+document.addEventListener("dragstart",e=>{if(!e.target.matches?.("input,textarea,[contenteditable=true]"))e.preventDefault()},{passive:false});
 document.addEventListener("contextmenu",e=>{if(e.target.closest?.("#mobile,#cameraControls,#scene3d"))e.preventDefault()},{passive:false});
+document.addEventListener("dblclick",e=>{if(e.target.closest?.("#mobile,#cameraControls,#scene3d"))e.preventDefault()},{passive:false});
+["gesturestart","gesturechange","gestureend"].forEach(type=>document.addEventListener(type,e=>e.preventDefault(),{passive:false}));
 $("#menuButton").onclick=menuBack;
 $("#travel").onclick=()=>{autoWalk=true};
 prompt.onclick=()=>{if(stageState.mode==="approach")giveFlowers();else kiss()};
-document.querySelectorAll("[data-key]").forEach(b=>{const k=b.dataset.key;const d=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);key.add(k)},u=e=>{e.preventDefault();key.delete(k)};b.onpointerdown=d;b.onpointerup=u;b.onpointercancel=u;b.onpointerleave=u});
+document.querySelectorAll("[data-key]").forEach(b=>{const k=b.dataset.key;b.style.touchAction="none";b.style.userSelect="none";const d=e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);key.add(k)},u=e=>{e.preventDefault();key.delete(k)};b.onpointerdown=d;b.onpointerup=u;b.onpointercancel=u;b.onpointerleave=u});
 document.querySelector('[data-action="flowers"]').onclick=giveFlowers;document.querySelector('[data-action="kiss"]').onclick=kiss;
 
 let last=performance.now(),petalT=0;
@@ -158,7 +161,19 @@ function update(dt,t){
 }
 function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(rendererReady){update(dt,now/1000);engine.render(dt,now/1000,stageState,pos,player,partner)}requestAnimationFrame(loop)}
 window.__BUBU_DUDU_PAPER_DATE__={start,reset,menu:menuBack,giveFlowers,kiss,state:stageState,debugNear(){if(player&&partner){pos[player].x=pos[partner].x-1.55;pos[player].z=pos[partner].z+.18;face();}}};
-$("#cameraLeft").onclick=()=>engine?.rotate(-.28);
-$("#cameraRight").onclick=()=>engine?.rotate(.28);
+function cameraButton(button,amount){
+  if(!button)return;
+  button.style.touchAction="none";button.style.userSelect="none";
+  button.addEventListener("pointerdown",e=>{
+    if(e.pointerType!=="touch"&&e.pointerType!=="pen")return;
+    e.preventDefault();button.setPointerCapture?.(e.pointerId);engine?.rotate(amount);button.dataset.touchRotateAt=String(performance.now());
+  },{passive:false});
+  button.addEventListener("click",e=>{
+    const at=Number(button.dataset.touchRotateAt||0);
+    if(performance.now()-at<500){e.preventDefault();return}
+    engine?.rotate(amount);
+  },{passive:false});
+}
+cameraButton($("#cameraLeft"),-.28);cameraButton($("#cameraRight"),.28);
 requestAnimationFrame(loop);
 })();
