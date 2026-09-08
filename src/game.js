@@ -129,9 +129,15 @@ function updateJoystick(e){
   let x=e.clientX-cx,y=e.clientY-cy,l=Math.hypot(x,y);if(l>max){x=x/l*max;y=y/l*max}joystick.x=x/max;joystick.y=y/max;joystickKnob.style.transform=`translate(${x}px,${y}px)`;
 }
 function releaseJoystick(){joystickPointer=null;joystick.x=joystick.y=0;joystickKnob.style.transform="translate(0,0)"}
-joystickEl.addEventListener("pointerdown",e=>{e.preventDefault();joystickPointer=e.pointerId;joystickEl.setPointerCapture?.(e.pointerId);updateJoystick(e)},{passive:false});
-joystickEl.addEventListener("pointermove",e=>{if(e.pointerId===joystickPointer){e.preventDefault();updateJoystick(e)}},{passive:false});
+let touchJoystick=false;
+joystickEl.addEventListener("pointerdown",e=>{if(touchJoystick)return;e.preventDefault();joystickPointer=e.pointerId;joystickEl.setPointerCapture?.(e.pointerId);updateJoystick(e)},{passive:false});
+joystickEl.addEventListener("pointermove",e=>{if(!touchJoystick&&e.pointerId===joystickPointer){e.preventDefault();updateJoystick(e)}},{passive:false});
 joystickEl.addEventListener("pointerup",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});joystickEl.addEventListener("pointercancel",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});
+function touchPoint(e){const p=e.touches?.[0]||e.changedTouches?.[0];return p?{clientX:p.clientX,clientY:p.clientY}:null}
+joystickEl.addEventListener("touchstart",e=>{const p=touchPoint(e);if(!p)return;e.preventDefault();touchJoystick=true;updateJoystick(p)},{passive:false});
+joystickEl.addEventListener("touchmove",e=>{const p=touchPoint(e);if(!touchJoystick||!p)return;e.preventDefault();updateJoystick(p)},{passive:false});
+joystickEl.addEventListener("touchend",e=>{if(touchJoystick){e.preventDefault();touchJoystick=false;releaseJoystick()}},{passive:false});
+joystickEl.addEventListener("touchcancel",()=>{touchJoystick=false;releaseJoystick()},{passive:false});
 function mobileAction(selector,action){const b=$(selector);if(!b)return;let touchedAt=0;b.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch"&&e.pointerType!=="pen")return;e.preventDefault();b.setPointerCapture?.(e.pointerId);touchedAt=performance.now();action()},{passive:false});b.addEventListener("click",e=>{if(performance.now()-touchedAt<600){e.preventDefault();return}action()},{passive:false});}
 mobileAction('[data-action="flowers"]',giveFlowers);mobileAction('[data-action="kiss"]',kiss);mobileAction('[data-action="jump"]',jump);
 
