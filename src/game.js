@@ -97,6 +97,8 @@ addEventListener("keydown",e=>{
 addEventListener("keyup",e=>key.delete(e.key.toLowerCase()));
 addEventListener("blur",()=>{key.clear();autoWalk=false});
 document.addEventListener("visibilitychange",()=>{if(document.hidden){key.clear();autoWalk=false}});
+document.addEventListener("selectstart",e=>{if(!e.target.matches?.("input,textarea,[contenteditable=true]"))e.preventDefault()},{passive:false});
+document.addEventListener("contextmenu",e=>{if(e.target.closest?.("#mobile,#cameraControls,#scene3d"))e.preventDefault()},{passive:false});
 $("#menuButton").onclick=menuBack;
 $("#travel").onclick=()=>{autoWalk=true};
 prompt.onclick=()=>{if(stageState.mode==="approach")giveFlowers();else kiss()};

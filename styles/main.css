@@ -7,6 +7,9 @@
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#efb8ca;font-family:"Trebuchet MS","Arial Rounded MT Bold",system-ui,sans-serif;color:var(--ink)}
 button,input{font:inherit}
 button{color:inherit}
+button,canvas,#mobile,#cameraControls,#ui{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+button{touch-action:manipulation}
+input{user-select:text;-webkit-user-select:text}
 #app{position:fixed;inset:0;overflow:hidden;background:linear-gradient(#f1b5ca 0 38%,#f9dce5 60%,#f6e8dc)}
 #sky{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .sun{position:absolute;right:13%;top:7%;width:18vmin;height:18vmin;border-radius:50%;background:radial-gradient(circle,#fff7cc 0 28%,rgba(255,244,192,.56) 52%,rgba(255,244,192,0) 74%)}
@@ -209,6 +212,6 @@ button:focus-visible{outline:3px solid #b66176;outline-offset:5px}
 #renderStatus[hidden]{display:none}
 .choose:disabled{opacity:.6;cursor:wait}
 #cameraControls{position:absolute;right:25px;top:90px;display:flex;gap:8px;align-items:center;pointer-events:auto;background:#fff8e5dc;padding:5px;border:1px solid #bda17b;border-radius:4px}
-#cameraControls span{font-size:9px;letter-spacing:1px}#cameraControls button{border:0;background:#ebdcc0;font-size:21px;width:34px;height:31px;cursor:pointer}
+#cameraControls span{font-size:9px;letter-spacing:1px}#cameraControls button{border:0;background:#ebdcc0;font-size:21px;width:34px;height:31px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
 #hud{max-width:300px}#chapter{pointer-events:none}
 @media(max-width:700px){#scene3d{height:calc(100% - 110px)}#chapter{display:none}#cameraControls{top:142px;right:18px}#travel{top:145px;left:18px;transform:none;font-size:11px;padding:12px}#hud{max-width:calc(100% - 36px)}#prompt{bottom:210px}#music,#menuButton{bottom:165px}}
