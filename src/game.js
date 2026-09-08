@@ -45,6 +45,7 @@ function currentCollected(){const ids=currentChapter().flowers||[];return ids.fi
 function updateChapterUi(){const c=currentChapter();chapter.innerHTML=`${c.chapter}<b>${c.name}</b>`;const count=stageState.level<3?`${currentCollected()}/3`:`${stageState.flowers-stageState.gifted}/${stageState.flowers}`;hud.innerHTML=`<strong>Nivel ${stageState.level}/3</strong> · Ramos: ${count}<br><strong>${stageState.chosen||"Bubu"}</strong> · ${escapeHtml(stageState.dedication||"Para Bettina, con todo mi amor 💗")}`}
 function resetActorState(p){p.moving=false;p.walkTime=0;p.turnT=0;p.heading=0;p.jumpY=0;p.jumpV=0}
 function loadLevel(levelNumber){
+  releaseJoystick();
   document.body.dataset.chapter=String(levelNumber);stageState.checkpoint=null;const c=PaperWorld.setLevel(levelNumber);stageState.level=levelNumber;stageState.eventT=0;stageState.hitCooldown=0;stageState.giftSpots=c.giftSpots||[];joystick.x=joystick.y=0;document.querySelector("#joystickKnob")?.style.setProperty("transform","translate(0,0)");
   stageState.mobs=(c.mobs||[]).map((m,i)=>({...m,baseX:m.x,baseZ:m.z,phase:i*.9,flip:false}));
   const start=c.start;Object.assign(pos[player],{x:start.x,z:start.z,flip:false,heading:Math.PI});
@@ -65,7 +66,7 @@ function start(name){
 $("#chooseBubu").onclick=()=>start("Bubu");$("#chooseDudu").onclick=()=>start("Dudu");
 
 function reset(){ if(!stageState.chosen){menu.style.display="flex";return} start(stageState.chosen) }
-function menuBack(){key.clear();joystick.x=joystick.y=0;autoWalk=false;PaperWorld.setLevel(3);delete document.body.dataset.chapter;document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
+function menuBack(){releaseJoystick();key.clear();joystick.x=joystick.y=0;autoWalk=false;PaperWorld.setLevel(3);delete document.body.dataset.chapter;document.body.classList.remove("playing");$("#travel").style.display="none";stageState.mode="menu";player=partner=null;menu.style.display="flex";hud.style.display=quest.style.display=prompt.style.display="none";Object.values(pos).forEach(resetActorState);Object.assign(pos.Bubu,{x:-1.3,z:-5.8,flip:false});Object.assign(pos.Dudu,{x:1.3,z:-5.8,flip:true})}
 
 function hearts(n=18){
   if(reducedMotion)return;
@@ -128,12 +129,29 @@ function updateJoystick(e){
   const r=joystickEl.getBoundingClientRect(),max=r.width*.34,cx=r.left+r.width/2,cy=r.top+r.height/2;
   let x=e.clientX-cx,y=e.clientY-cy,l=Math.hypot(x,y);if(l>max){x=x/l*max;y=y/l*max}joystick.x=x/max;joystick.y=y/max;joystickKnob.style.transform=`translate(${x}px,${y}px)`;
 }
-function releaseJoystick(){joystickPointer=null;touchJoystick=false;touchJoystickId=null;joystick.x=joystick.y=0;joystickKnob.style.transform="translate(0,0)"}
+function releaseJoystick(){
+ const captured=joystickPointer;joystickPointer=null;touchJoystick=false;touchJoystickId=null;
+ joystick.x=joystick.y=0;joystickKnob.style.transform="translate(0,0)";
+ try{if(captured!==null&&joystickEl.hasPointerCapture?.(captured))joystickEl.releasePointerCapture(captured)}catch(_){}
+}
 let touchJoystick=false;
-joystickEl.addEventListener("pointerdown",e=>{if(touchJoystick||joystickPointer!==null)return;e.preventDefault();joystickPointer=e.pointerId;updateJoystick(e);try{joystickEl.setPointerCapture?.(e.pointerId)}catch(_){}},{passive:false});
-document.addEventListener("pointermove",e=>{if(e.pointerId===joystickPointer){e.preventDefault();updateJoystick(e)}},{capture:true,passive:false});
-document.addEventListener("pointerup",e=>{if(e.pointerId===joystickPointer)releaseJoystick()},{capture:true});
-document.addEventListener("pointercancel",e=>{if(e.pointerId===joystickPointer)releaseJoystick()},{capture:true});
+joystickEl.addEventListener("pointerdown",e=>{e.preventDefault();releaseJoystick();joystickPointer=e.pointerId;updateJoystick(e);try{joystickEl.setPointerCapture?.(e.pointerId)}catch(_){}},{passive:false});
+document.addEventListener("pointermove",e=>{if(e.pointerId===joystickPointer){if(e.pointerType!=="touch"&&e.buttons===0){releaseJoystick();return}e.preventDefault();updateJoystick(e)}},{capture:true,passive:false});
+window.addEventListener("pointerup",e=>{if(e.pointerId===joystickPointer)releaseJoystick()},{capture:true});
+window.addEventListener("pointercancel",e=>{if(e.pointerId===joystickPointer)releaseJoystick()},{capture:true});
+joystickEl.addEventListener("lostpointercapture",e=>{if(e.pointerId===joystickPointer)releaseJoystick()});
+for(const event of ["pagehide","pageshow","resize","orientationchange"])window.addEventListener(event,releaseJoystick);
+// Touch lists reconcile missing pointer releases without driving the joystick twice.
+if(window.PointerEvent){
+ document.addEventListener("touchstart",e=>{
+  if(joystickPointer!==null&&e.target.closest?.("#joystick"))touchJoystickId=e.changedTouches[0]?.identifier??null;
+ },{capture:true,passive:true});
+ const reconcile=e=>{
+  if(joystickPointer===null)return;
+  if(!e.touches.length||(touchJoystickId!==null&&!findTouch(e.touches,touchJoystickId)))releaseJoystick();
+ };
+ for(const event of ["touchmove","touchend","touchcancel"])window.addEventListener(event,reconcile,{capture:true,passive:true});
+}
 function findTouch(list,id){if(!list)return null;for(let i=0;i<list.length;i++){const p=list[i];if(id===undefined||p.identifier===id)return p}return null}
 function touchPoint(e,id){const p=findTouch(e.changedTouches,id)||findTouch(e.touches,id);return p?{clientX:p.clientX,clientY:p.clientY}:null}
 if(!window.PointerEvent){
