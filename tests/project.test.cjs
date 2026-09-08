@@ -9,3 +9,9 @@ test('Entry page loads all project scripts locally in dependency order',()=>{
 test('Game no longer substitutes action animations with remote GIFs or photo overlays',()=>{
  const js=fs.readFileSync('src/game.js','utf8');assert(!js.includes('cinematicShow'));assert(!js.includes('media.tenor'));assert(!js.includes('pinimg'));
 });
+test('Mobile controls cannot select text or trigger browser zoom gestures',()=>{
+ const css=fs.readFileSync('styles/main.css','utf8'),js=fs.readFileSync('src/game.js','utf8');
+ assert(css.includes('#cameraControls button{')&&css.includes('touch-action:none'));
+ assert(css.includes('user-select:none')&&css.includes('-webkit-user-select:none'));
+ assert(js.includes('selectstart')&&js.includes('contextmenu'));
+});
