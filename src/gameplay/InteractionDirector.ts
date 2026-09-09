@@ -82,7 +82,7 @@ export class InteractionDirector {
       }
     } else if (s.mode === 'kiss') {
       if (s.eventT > 1.5 && s.eventT - dt <= 1.5)
-        this.context.say(s.actor.name, '¡Muá! Te quiero mucho.', 'kiss');
+        this.context.say(s.actor.name, '¡Muá! Te amo mucho.', 'kiss');
       s.face();
       if (s.eventT > 2.8) {
         s.mode = 'done';

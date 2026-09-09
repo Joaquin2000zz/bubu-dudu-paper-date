@@ -12,4 +12,6 @@ ramos, regalar y besar. Una nueva frase interrumpe la anterior para evitar super
 Volver al menú o silenciar el sonido detiene la voz. Los globos conservan español legible.
 
 Estas grabaciones sustituyen la síntesis experimental de «atata/dadada» anterior.
+Asignación corregida por el usuario: Bubu reproduce `dudu.mp3` y Dudu reproduce
+`bubu.mp3`; los nombres de los archivos originales estaban invertidos.
 La música y las campanitas continúan siendo procedurales.

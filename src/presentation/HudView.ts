@@ -133,7 +133,7 @@ export class HudView {
       : 'WASD / flechas: mover · J / X: saltar · Q / C: cámara';
   }
   say(name: CharacterName, text: string): void {
-    this.speaking = { name, until: performance.now() + (name === 'Bubu' ? 3800 : 3100) };
+    this.speaking = { name, until: performance.now() + (name === 'Dudu' ? 3800 : 3100) };
     this.dialogue.replaceChildren();
     const label = document.createElement('strong'),
       words = document.createElement('span');

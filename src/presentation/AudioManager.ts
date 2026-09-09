@@ -44,7 +44,7 @@ export class AudioManager {
   private voice: AudioBufferSourceNode | null = null;
   private voiceRequest = 0;
   private buffers = new Map<CharacterName, Promise<AudioBuffer>>();
-  private readonly recordings: Record<CharacterName, string> = { Bubu: bubuVoice, Dudu: duduVoice };
+  private readonly recordings: Record<CharacterName, string> = { Bubu: duduVoice, Dudu: bubuVoice };
   stopVoice(): void {
     this.voiceRequest++;
     this.voice?.stop();
