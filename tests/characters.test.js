@@ -1,7 +1,8 @@
-const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const scope=vm.createContext({});
-vm.runInContext(fs.readFileSync('src/characters.js','utf8')+'\nthis.characters=PaperCharacters;',scope);
-vm.runInContext(fs.readFileSync('src/animation.js','utf8')+'\nthis.animation=PaperAnimation;',scope);
+import {test} from 'vitest';
+import assert from 'node:assert/strict';
+import {PaperCharacters} from '../src/characters.js';
+import {PaperAnimation} from '../src/animation.js';
+const scope={characters:PaperCharacters,animation:PaperAnimation};
 const positions={Bubu:{x:-1,z:0,heading:0},Dudu:{x:1,z:0,heading:0}};
 const pose=(p,state={mode:'approach'})=>scope.animation.pose('Bubu',p,positions,state,'Bubu','Dudu',0);
 test('Movement shows front, back and both directions of the three-quarter drawing',()=>{

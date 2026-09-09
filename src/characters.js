@@ -45,3 +45,5 @@
   }
 
 const PaperCharacters={svg:actorArt,emotion(level,flowers=0){return level===3||flowers>=5?'happy':level===2?'calm':flowers===0?'crying':flowers<3?'sad':'calm'}};
+
+export { PaperCharacters, actorArt };
