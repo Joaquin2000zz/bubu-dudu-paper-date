@@ -57,6 +57,7 @@ export class Game implements SceneContext {
         `♫ Sonido: ${this.session.music ? 'activado' : 'silenciado'}`;
       this.hud.get('#music').setAttribute('aria-pressed', String(this.session.music));
       if (this.session.music) this.audio.startMusic();
+      else this.audio.stopVoice();
     });
     bind('#travel', () => {
       if (this.garden) this.garden.autoWalk = true;
@@ -103,6 +104,7 @@ export class Game implements SceneContext {
     else this.menu();
   };
   menu = (): void => {
+    this.audio.stopVoice();
     this.scenes.dispose();
     this.garden = null;
     this.input.clear();

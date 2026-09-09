@@ -41,7 +41,7 @@ En móviles, joystick y botones independientes permiten caminar y saltar con dos
 
 Ver [arquitectura](docs/ARCHITECTURE.md) y [guía de nuevas mecánicas](docs/DEVELOPMENT.md).
 La dirección artística está en `DIRECCION_ARTISTICA.md`; las referencias de voz en
-`AUDIO_REFERENCES.md`. Se conserva la síntesis publicada, sin retomar experimentos descartados.
+`AUDIO_REFERENCES.md`. Las voces usan las grabaciones aisladas proporcionadas por el usuario.
 
 ## Revisar y publicar
 

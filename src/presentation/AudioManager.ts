@@ -1,6 +1,8 @@
+import bubuVoice from '../assets/voices/bubu.mp3?inline';
+import duduVoice from '../assets/voices/dudu.mp3?inline';
 import type { CharacterName } from '../core/types';
 
-/** Retains the published procedural sound; this refactor does not replace the voices. */
+/** Recorded character voices, with procedural music and effects. */
 export class AudioManager {
   private context: AudioContext | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -39,65 +41,46 @@ export class AudioManager {
       g.disconnect();
     };
   }
-  babble(name: CharacterName, kind = 'talk'): void {
+  private voice: AudioBufferSourceNode | null = null;
+  private voiceRequest = 0;
+  private buffers = new Map<CharacterName, Promise<AudioBuffer>>();
+  private readonly recordings: Record<CharacterName, string> = { Bubu: bubuVoice, Dudu: duduVoice };
+  stopVoice(): void {
+    this.voiceRequest++;
+    this.voice?.stop();
+    this.voice = null;
+  }
+  babble(name: CharacterName, _kind = 'talk'): void {
+    this.stopVoice();
     if (!this.state.music) return;
-    const a = this.audio();
-    if (!a) return;
-    const pitch = name === 'Bubu' ? 238 : 352,
-      syllables = name === 'Bubu' ? 'atata' : 'dadada';
-    const pattern =
-      kind === 'kiss'
-        ? name === 'Bubu'
-          ? [1.08, 1.24]
-          : [1.02, 1.18]
-        : syllables === 'atata'
-          ? [1, 0.88, 1.02, 0.9]
-          : [1, 1.15, 1.04, 1.2, 1.08];
-    pattern.forEach((p, i) => {
-      const t = a.currentTime + i * 0.135,
-        source = a.createOscillator(),
-        envelope = a.createGain();
-      source.type = 'triangle';
-      source.frequency.setValueAtTime(pitch * p, t);
-      source.frequency.exponentialRampToValueAtTime(
-        pitch * p * (name === 'Bubu' ? 0.82 : 0.9),
-        t + 0.12,
-      );
-      envelope.gain.setValueAtTime(0, t);
-      envelope.gain.linearRampToValueAtTime(0.13, t + 0.012);
-      envelope.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
-      envelope.connect(a.destination);
-      const vowels =
-        i % 2 === 0
-          ? name === 'Bubu'
-            ? [420, 920, 2200]
-            : [520, 1250, 2700]
-          : name === 'Bubu'
-            ? [330, 760, 1900]
-            : [700, 1500, 3100];
-      const filters = vowels.map((f, j) => {
-        const filter = a.createBiquadFilter(),
-          gain = a.createGain();
-        filter.type = 'bandpass';
-        filter.frequency.value = f;
-        filter.Q.value = 5;
-        gain.gain.value = [1, 0.5, 0.18][j];
-        source.connect(filter);
-        filter.connect(gain);
-        gain.connect(envelope);
-        return [filter, gain];
+    const context = this.audio();
+    if (!context) return;
+    const request = this.voiceRequest;
+    let buffer = this.buffers.get(name);
+    if (!buffer) {
+      buffer = fetch(this.recordings[name])
+        .then((r) => r.arrayBuffer())
+        .then((bytes) => context.decodeAudioData(bytes));
+      this.buffers.set(name, buffer);
+    }
+    void Promise.all([buffer, context.resume()])
+      .then(([decoded]) => {
+        if (request !== this.voiceRequest || !this.state.music || context.state === 'closed')
+          return;
+        const source = context.createBufferSource();
+        source.buffer = decoded;
+        source.connect(context.destination);
+        this.voice = source;
+        source.onended = () => {
+          source.disconnect();
+          if (this.voice === source) this.voice = null;
+        };
+        source.start();
+      })
+      .catch((error) => {
+        this.buffers.delete(name);
+        console.error('No se pudo reproducir la voz de ' + name, error);
       });
-      source.start(t);
-      source.stop(t + 0.14);
-      source.onended = () => {
-        source.disconnect();
-        envelope.disconnect();
-        for (const [f, g] of filters) {
-          f.disconnect();
-          g.disconnect();
-        }
-      };
-    });
   }
   startMusic(): void {
     this.audio();
@@ -129,6 +112,8 @@ export class AudioManager {
     this.tone(1319, 0.25, 0.035, 0.16);
   }
   dispose(): void {
+    this.stopVoice();
+    this.buffers.clear();
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
     void this.context?.close();
