@@ -1,58 +1,57 @@
 # Bubu & Dudu — Una aventura de papel para dos
 
-Plataformas 3D de papel con personajes 2D animados en WebGL. La campaña tiene dos niveles de recorrido con huecos, plataformas, obstáculos, mobs y tres ramos por nivel; el tercer nivel conserva el jardín romántico original como final.
+Plataformas WebGL con personajes 2D. Dos capítulos de desafíos con tres ramos por
+nivel desembocan en el jardín romántico original.
 
-## Abrir
+## Desarrollo
 
-- Abrir `index.html` directamente, o ejecutar `npm start` y visitar `http://127.0.0.1:8765`.
-- `npm run build` genera `dist/bubu-dudu.html`, un único archivo para llevar o compartir.
-- La antigua entrada `bubu_dudu_paper_date_final.html` abre la nueva versión.
-- `bubu_dudu_paper_date_original.html` conserva el archivo recibido.
+Node.js 24 y npm. Instalar con `npm ci`, ejecutar `npm start` y abrir
+http://127.0.0.1:8766. El código fuente usa módulos: `index.html` necesita servidor.
+
+- `npm run check`: tipos estrictos, lint, pruebas y compilación.
+- `npm run test:browser`: regresión de controles y pareja con el servidor activo.
+  Usa Edge por defecto; `BROWSER_CHANNEL=chromium` usa Chromium de Playwright,
+  instalado mediante `npx playwright install chromium`.
+- `npm run build`: genera `dist/index.html`, recursos versionados y `dist/bubu-dudu.html`.
+  Este último es un HTML autónomo para abrir directamente y compartir sin servidor.
+- `npm run preview`: sirve la compilación en http://localhost:4173.
+- `npm run format`: formatea los módulos TypeScript.
+
+`GAME_URL` permite probar otra URL, incluida producción. La emulación táctil no
+sustituye comprobar joystick y audio en un iPhone físico.
 
 ## Controles
 
-WASD/flechas: caminar. J/X: saltar. E: flores. Espacio: beso. R: reiniciar. Escape: inicio.
-“Seguir el caminito” permite acercarse automáticamente en el jardín final. En pantallas pequeñas el joystick mueve con intensidad analógica; los botones de flores, salto y beso permanecen separados para permitir movimiento y salto con dos dedos.
+WASD/flechas: caminar. J/X: saltar. E: flores. Espacio: beso. R: reiniciar. Escape: menú.
+Q/C y botones: girar cámara. Arrastrar el escenario también gira la cámara.
+En móviles, joystick y botones independientes permiten caminar y saltar con dos dedos.
 
-Arrastrar el jardín o usar los botones de cámara gira libremente 360° alrededor del escenario. Q/C también giran la cámara. El movimiento por teclado se orienta respecto a la cámara.
+## Arquitectura
 
-## Organización
+- `src/core`: composición de Game, bucle, tipos y limpieza de recursos.
+- `src/scenes`: PlatformScene, GardenScene y transiciones de salida/entrada.
+- `src/actors`: personaje, motor compartido y enemigo con estados de ataque.
+- `src/physics`: superficies y colisiones independientes del dibujo.
+- `src/gameplay`: sesión, inventario y secuencias de pareja.
+- `src/input`: acciones, teclado y joystick con recuperación tras interrupciones.
+- `src/content/levels.ts`: mapas, temas, introducciones y orden de campaña.
+- `src/presentation`: renderizador, HUD y audio.
+- `src/engine.js`, `characters.js`, `animation.js`: dibujo WebGL y arte original,
+  conservados en JavaScript detrás de la interfaz TypeScript.
 
-| Archivo | Responsabilidad |
-| --- | --- |
-| `index.html` | Interfaz y dibujos base de la vegetación |
-| `styles/main.css` | Menú, controles y tamaños de pantalla |
-| `src/characters.js` | Dibujos frontales, en tres cuartos y de espalda; fotogramas de brazos, pies y expresiones |
-| `src/animation.js` | Selección de pose según dirección, cámara y acción |
-| `src/world.js` | Tres niveles, plataformas, huecos, superficies compartidas por el dibujo y las colisiones |
-| `src/engine.js` | WebGL, geometría, cámara, texturas, profundidad y colisiones |
-| `src/game.js` | Movimiento, cita, teclado, controles táctiles y sonido |
-| `tests/characters.test.cjs` | Pruebas de identidad, orientaciones y estados de animación |
-| `tests/browser.html` | Prueba interactiva de la partida real dentro de un iframe |
-| `tests/animation-review.html` | Galería animada para revisar todas las poses |
-| `scripts/serve.cjs` | Servidor local sin dependencias |
-| `scripts/build.cjs` | Generación del HTML autónomo |
+Ver [arquitectura](docs/ARCHITECTURE.md) y [guía de nuevas mecánicas](docs/DEVELOPMENT.md).
+La dirección artística está en `DIRECCION_ARTISTICA.md`; las referencias de voz en
+`AUDIO_REFERENCES.md`. Las voces usan las grabaciones aisladas proporcionadas por el usuario.
 
-Los scripts se cargan en orden y usan objetos pequeños compartidos para permitir la apertura directa mediante `file://`, sin instalación ni empaquetador.
+## Revisar y publicar
 
-## Validación
+`tests/animation-review.html` es la galería de poses durante desarrollo.
+`tests/browser.html` permite revisar capítulos y acciones sin completar una partida.
+Las pruebas de navegador generan capturas en `tests/artifacts`.
 
-`npm test` ejecuta las pruebas de estados y dibujos. Para comprobar el renderizado y el ciclo completo, abrir `tests/browser.html` desde el servidor y pulsar “Probar movimiento y acciones”. La galería `tests/animation-review.html` facilita revisar identidad y movimiento antes de cambiar sprites.
+GitHub Actions verifica ramas y PR. En `main`, despliega `dist` tras pasar los controles.
+La fuente de publicación de Pages debe configurarse como **GitHub Actions**.
+Preparar el workflow no cambia por sí solo la configuración del sitio existente.
 
-El entorno combina plataformas, huecos, escalones, obstáculos, mobs y el jardín final con volumen real, más personajes y vegetación planos. La cámara usa perspectiva y buffer de profundidad; no se proyecta el escenario con CSS. Requiere un navegador con WebGL disponible.
-
-El apoyo del personaje se calcula sobre las mismas piezas que se dibujan. El radio de los pies evita hundirse al tocar un borde; los desniveles altos bloquean el paso y la escalera permite subir y bajar. El puente incluye accesos bajos y apoyo continuo entre tablas. Caminar y acercarse durante el beso usan el mismo movimiento con colisiones, dividido en pasos pequeños para no atravesar obstáculos.
-
-Referencias y decisiones de identidad: `DIRECCION_ARTISTICA.md`.
-
-
-### Recorrido emocional y desafíos
-
-El valle de las cartas perdidas transcurre bajo lluvia y luz de luna; el bosque del primer amanecer recupera luz y vegetación. El jardín final conserva su estética original. Los primeros capítulos tienen siete islas, seis cruces obligatorios y tres ramos cada uno. Cada ramo conserva el progreso y establece un punto de retorno. Los guardianes anuncian una embestida, atacan y descansan; saltarles encima los aturde. Las expresiones pasan de llanto a tristeza, calma y alegría con los ramos y los capítulos.
-
-Prueba táctil de regresión: `node tests/mobile-browser.cjs` con Playwright instalado (o `PLAYWRIGHT_MODULE` apuntando a su módulo), servidor en el puerto 8765 y Edge disponible. Verifica toques reales mediante CDP, joystick y salto simultáneos, embestidas, puntos de retorno, el salto sobre el vacío y controles en el jardín. `BROWSER_CHANNEL` permite elegir otro canal de Chromium. Las capturas se guardan en `tests/artifacts/`. La inspección de posiciones se habilita únicamente con `?test=1`.
-
-Para comprobar recuperación del joystick después de interrupciones: `node tests/joystick-browser.cjs`, con la misma configuración de Playwright. Cubre pérdida de captura, cancelación del toque, salida de la página, cambio de tamaño, cambio de nivel, ausencia de `pointerup` y un toque nuevo después de quedar un puntero antiguo activo.
-
-
-El jardín final permite saltar con J/X o el botón SALTAR. Durante la entrega y el beso se usa una formación lateral y dibujos de perfil, con el ramo en las manos y ambos personajes visibles incluso con la cámara girada. Hay diálogos de ambos personajes, acompañados por vocalizaciones sintetizadas (ver AUDIO_REFERENCES.md). `node tests/couple-browser.cjs` comprueba saltos, entrega, beso y encuadre.
+`bubu_dudu_paper_date_original.html` conserva el archivo original; la entrada histórica
+`bubu_dudu_paper_date_final.html` redirige al juego.

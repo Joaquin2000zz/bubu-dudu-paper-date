@@ -19,3 +19,5 @@ const PaperAnimation = {
     return {view,flip,action,frame,key:`${name}:${view}:${action}:${frame}`};
   }
 };
+
+export { PaperAnimation };

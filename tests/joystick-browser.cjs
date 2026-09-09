@@ -4,7 +4,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  const browser=await chromium.launch({headless:true,channel:process.env.BROWSER_CHANNEL||'msedge'});
  try{
  const page=await browser.newPage({viewport:{width:430,height:860},isMobile:true,hasTouch:true});
- await page.goto((process.env.GAME_URL||'http://127.0.0.1:8765/index.html')+'?test=1');
+ await page.goto((process.env.GAME_URL||'http://127.0.0.1:8766/index.html')+'?test=1');
  await page.waitForFunction(()=>document.querySelector('#scene3d').dataset.ready==='true');await page.click('#chooseDudu');
  const box=await page.locator('#joystick').boundingBox(),x=box.x+box.width/2,y=box.y+box.height/2;
  const cdp=await page.context().newCDPSession(page);

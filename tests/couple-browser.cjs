@@ -1,9 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
-(async()=>{const browser=await chromium.launch({headless:true,channel:'msedge'});try{
+(async()=>{const browser=await chromium.launch({headless:true,channel:process.env.BROWSER_CHANNEL||'msedge'});try{
 const page=await browser.newPage({viewport:{width:1100,height:820}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
-await page.goto('http://127.0.0.1:8765/index.html?test=1');await page.waitForFunction(()=>document.querySelector('#scene3d').dataset.ready==='true');await page.click('#chooseDudu');
-await page.evaluate(()=>{const a=window.__BUBU_DUDU_PAPER_DATE__;a.state.flowers=6;a.loadLevel(3)});
+await page.goto((process.env.GAME_URL||'http://127.0.0.1:8766/index.html')+'?test=1');await page.waitForFunction(()=>document.querySelector('#scene3d').dataset.ready==='true');await page.click('#chooseDudu');
+await page.evaluate(()=>{const a=window.__BUBU_DUDU_PAPER_DATE__;for(let i=0;i<6;i++)a.state.inventory.collect('test-'+i);a.loadLevel(3)});
 await page.keyboard.press('j');await page.waitForTimeout(170);assert((await page.evaluate(()=>window.__BUBU_DUDU_PAPER_DATE__.positions.Dudu.jumpY))>.1,'Jump works in the final garden');await page.waitForTimeout(750);assert.equal(await page.evaluate(()=>window.__BUBU_DUDU_PAPER_DATE__.positions.Dudu.jumpY),0);
 for(let i=0;i<5;i++)await page.click('#cameraRight');await page.waitForTimeout(600);
 await page.evaluate(()=>{const a=window.__BUBU_DUDU_PAPER_DATE__;a.debugNear();a.giveFlowers()});await page.waitForTimeout(1700);

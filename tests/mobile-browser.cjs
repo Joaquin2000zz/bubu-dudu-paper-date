@@ -6,7 +6,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  try{
  const page=await browser.newPage({viewport:{width:430,height:860},isMobile:true,hasTouch:true,deviceScaleFactor:1});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto((process.env.GAME_URL||'http://127.0.0.1:8765/index.html')+'?test=1');
+ await page.goto((process.env.GAME_URL||'http://127.0.0.1:8766/index.html')+'?test=1');
  await page.waitForFunction(()=>document.querySelector('#scene3d').dataset.ready==='true');await page.click('#chooseDudu');await page.waitForTimeout(300);
  assert.equal(await page.evaluate(()=>JSON.parse(document.querySelector('#scene3d').dataset.poses).Dudu.emotion),'crying');
  const r=await page.locator('#joystick').boundingBox(),cx=r.x+r.width/2,cy=r.y+r.height/2;

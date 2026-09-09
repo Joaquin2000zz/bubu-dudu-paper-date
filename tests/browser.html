@@ -1,36 +1,29 @@
-<!doctype html><html lang="es"><meta charset="utf-8"><title>Prueba de animación y escena</title>
-<style>body{font:14px system-ui;background:#fff8e5;color:#513b32}button{padding:12px}iframe{width:100%;height:650px;border:1px solid #bc9c75}pre{white-space:pre-wrap}</style>
-<button id="run">Probar movimiento y acciones</button><pre id="result">Listo para probar la partida real.</pre><iframe id="game" src="../index.html"></iframe>
-<script>
-const frame=document.querySelector('#game'),out=document.querySelector('#result');
-document.querySelector('#run').onclick=async()=>{
-  const win=frame.contentWindow,doc=frame.contentDocument;
-  const pause=ms=>new Promise(r=>setTimeout(r,ms)),check=(ok,message)=>{if(!ok)throw Error(message);out.textContent+='\n✓ '+message};
-  const canvas=doc.querySelector('#scene3d'),poses=()=>JSON.parse(canvas.dataset.poses);
-  const send=(type,key)=>canvas.dispatchEvent(new win.KeyboardEvent(type,{key,bubbles:true}));
-  try{
-    out.textContent='Prueba en ejecución';
-    check(canvas.dataset.ready==='true','WebGL y todos los dibujos cargados');
-    const api=win.__BUBU_DUDU_PAPER_DATE__;api.start('Bubu');doc.querySelector('#music').click();await pause(200);
-    const samples=[];
-    for(const [key,view,flip] of [['w','back',false],['s','front',false],['d','side',false],['a','side',true]]){
-      send('keydown',key);await pause(230);const first=poses().Bubu;await pause(210);const second=poses().Bubu;send('keyup',key);
-      check(first.view===view&&first.action==='walk',key+': vista '+view+' mientras camina');
-      check(first.frame!==second.frame,key+': cambian los fotogramas de brazos y pies');
-      if(view==='side')check(first.flip===flip,key+': orientación lateral correcta');samples.push(first);await pause(70);
-    }
-    check(poses().Bubu.action==='idle','Al soltar la tecla termina la caminata');
-    api.debugNear();await pause(100);api.giveFlowers();await pause(300);
-    check(poses().Bubu.action==='give'&&poses().Dudu.action==='receive','Flores: poses diferentes de entrega y recepción');
-    await pause(1000);check(poses().Bubu.frame>=2,'La entrega extiende los brazos durante la acción');await pause(1200);
-    api.kiss();await pause(500);check(poses().Bubu.action==='kiss'&&poses().Dudu.action==='kiss','Beso: ambos personajes cambian ojos, boca y brazos');
-    await pause(1700);check(doc.querySelector('#hud').textContent.includes('Besos: 1'),'La cita termina con un beso contabilizado');
-    const camera=Number(canvas.dataset.camera);doc.querySelector('#cameraRight').click();await pause(500);check(Number(canvas.dataset.camera)>camera,'La cámara cambia su posición en el escenario 3D');
-    for(let i=0;i<36;i++)doc.querySelector('#cameraRight').click();await pause(1000);check(Number(canvas.dataset.camera)-camera>Math.PI*2,'La cámara gira más de 360° sin límites laterales');
-    for(let i=0;i<37;i++)doc.querySelector('#cameraLeft').click();await pause(1600);
-    api.start('Dudu');await pause(100);send('keydown','w');await pause(250);send('keyup','w');check(poses().Dudu.view==='back','Dudu también dispone de vista trasera');
-    api.menu();await pause(100);check(doc.querySelector('#menu').style.display==='flex','El menú sigue funcionando después de la cita');
-    out.textContent+='\n\nPASS — movimiento, ocho frames, cuatro direcciones, entrega, recepción, beso, cámara y reinicio.';
-  }catch(e){out.textContent+='\nFAIL — '+e.message;console.error(e)}
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratorio de Bubu & Dudu</title>
+<style>body{font:14px system-ui;background:#fff8e5;color:#513b32;margin:16px}button,select{padding:10px;margin:4px}iframe{width:100%;height:72vh;border:1px solid #bc9c75}pre{white-space:pre-wrap}</style>
+<h1>Laboratorio de juego</h1>
+<p>Inspección manual de niveles, controles y acciones. <a href="animation-review.html">Galería de dibujos</a></p>
+<select id="actor"><option>Dudu</option><option>Bubu</option></select>
+<button data-level="1">Valle</button><button data-level="2">Bosque</button><button data-level="3">Jardín</button>
+<button id="near">Acercar pareja + seis ramos</button><button id="jump">Saltar</button><button id="flowers">Dar ramo</button><button id="kiss">Beso</button>
+<pre id="state">Cargando…</pre><iframe id="game" src="../index.html?test=1"></iframe>
+<script type="module">
+const frame=document.querySelector('#game'),output=document.querySelector('#state');
+const api=()=>frame.contentWindow.__BUBU_DUDU_PAPER_DATE__;
+for(const button of document.querySelectorAll('[data-level]'))button.onclick=()=>{
+  api().start(document.querySelector('#actor').value);api().loadLevel(Number(button.dataset.level));
 };
-</script></html>
+document.querySelector('#near').onclick=()=>{
+  const game=api();if(game.state.mode==='menu')game.start(document.querySelector('#actor').value);
+  game.loadLevel(3);for(let i=0;i<6;i++)game.state.inventory.collect('lab-'+i);game.debugNear();
+};
+for(const [button,action] of [['jump','jump'],['flowers','giveFlowers'],['kiss','kiss']])document.querySelector('#'+button).onclick=()=>api()[action]();
+setInterval(()=>{
+  const game=api();if(!game)return;
+  const s=game.state,p=game.positions[s.player];
+  output.textContent=JSON.stringify({nivel:s.level,estado:s.mode,ramos:s.flowers,disponibles:s.inventory.available,personaje:p?{x:p.x,z:p.z,salto:p.jumpY,velocidadVertical:p.jumpV,sueloBase:p.jumpBase}:null},null,2);
+},200);
+</script>
+</html>

@@ -1,6 +1,8 @@
-const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const scope=vm.createContext({});vm.runInContext(fs.readFileSync('src/world.js','utf8')+';this.world=PaperWorld;',scope);
-const w=scope.world,close=(a,b)=>assert(Math.abs(a-b)<1e-7,`${a} != ${b}`);
+import {test} from 'vitest';
+import assert from 'node:assert/strict';
+import {PhysicsWorld} from '../src/physics/PhysicsWorld';
+import {LEVELS} from '../src/content/levels';
+const w=new PhysicsWorld(LEVELS),close=(a,b)=>assert(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 test('Platform support matches the rendered top at the reported clipping location',()=>{
  close(w.heightAt(1,-5.7),.48);close(w.supportAt(1,-5.7),.48);
  close(w.heightAt(3,-5.5),.48);close(w.heightAt(4,-6),.03);

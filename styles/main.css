@@ -243,6 +243,35 @@ body[data-chapter="1"] #sky:after{animation:rainDrift 1.4s linear infinite}
 @keyframes rainDrift{to{transform:translate(-30px,80px)}}
 @media(prefers-reduced-motion:reduce){body[data-chapter="1"] #sky:after{animation:none}}
 
+/* Input presentation is independent of viewport width (including touch laptops). */
+#app[data-controls="keyboard"] #mobile{display:none!important}
+#app[data-controls="touch"] #mobile{display:none!important}
+body.playing #app[data-controls="touch"] #mobile{display:flex!important}
+#app[data-controls="keyboard"] .touch-only,#app[data-controls="touch"] .keyboard-only{display:none!important}
+body:not(.playing) #ui{visibility:hidden}
+#mobile button[hidden]{display:none!important}
+#mobile .acts{display:flex;gap:6px;align-items:end}
+#mobile .acts button{width:66px;min-height:60px;line-height:1.25}
+#mobile button:disabled{opacity:.5;box-shadow:none}
+#prompt{pointer-events:none;cursor:default}
+#keyboardHelp{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;text-align:center;white-space:nowrap;opacity:.85}
+body[data-chapter="1"] #keyboardHelp{color:#e1e4ec;opacity:1}
+#app[data-controls="keyboard"] #prompt{bottom:42px}
+#app[data-controls="keyboard"] #music,#app[data-controls="keyboard"] #menuButton{bottom:42px}
+#app[data-controls="touch"] #prompt{bottom:180px;min-width:0;width:calc(100% - 36px);max-width:560px}
+#app[data-controls="touch"] #music,#app[data-controls="touch"] #menuButton{bottom:135px}
+#app[data-controls="touch"] #mobile{bottom:max(12px,env(safe-area-inset-bottom))}
+@media(max-width:700px){
+  #app[data-controls="keyboard"] #prompt{bottom:102px}
+  #app[data-controls="keyboard"] #music,#app[data-controls="keyboard"] #menuButton{bottom:50px}
+  #keyboardHelp{white-space:normal;width:calc(100% - 36px);bottom:8px}
+  #cameraControls{top:150px}
+  #travel{top:206px;max-width:calc(100% - 36px)}
+  #hud strong{font-size:18px}
+  #menuCard .tips{font-size:11px;line-height:1.6}
+}
+@media(max-width:380px){#mobile .acts button{width:56px;font-size:10px}}
+
 body[data-chapter="1"] #toast{background:#29384a;color:#efdbc0;border-color:#7b8f9f}
 
 .dialogue{position:absolute;z-index:45;max-width:240px;width:max-content;padding:10px 14px;border:2px solid #957d6a;border-radius:17px;background:#fff9e9;color:#513b32;box-shadow:3px 4px #0002;pointer-events:none;transform:translate(-50%,-100%);opacity:0;transition:opacity .15s;font-size:13px;line-height:1.35}
