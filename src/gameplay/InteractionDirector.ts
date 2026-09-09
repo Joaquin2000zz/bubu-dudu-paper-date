@@ -47,7 +47,7 @@ export class InteractionDirector {
     s.kisses++;
     s.face();
     hud.quest('kiss');
-    hud.prompt('💋 ¡Mwah!', true);
+    hud.prompt('💋 ¡Muá!', true);
     hud.hearts(s, renderer, 30);
     audio.kissChime();
     hud.toast(s.kisses === 1 ? '💗 PRIMER BESO 💗' : `💗 ${s.kisses} BESOS 💗`);
@@ -81,7 +81,7 @@ export class InteractionDirector {
         s.mode = 'ready';
         s.eventT = 0;
         hud.quest('kiss');
-        hud.prompt('Ahora acercate un poquito y presioná Espacio 💋', true);
+        hud.prompt(hud.kissHint(), true);
       }
     } else if (s.mode === 'kiss') {
       if (s.eventT > 1.5 && s.eventT - dt <= 1.5)

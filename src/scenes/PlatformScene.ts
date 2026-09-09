@@ -63,14 +63,17 @@ export class PlatformScene implements Scene {
       Math.hypot(actor.x - level.goal.x, actor.z - level.goal.z) < 1.35 &&
       count === level.flowers.length
     ) {
-      if (s.mode !== 'exit')
-        hud.prompt(`¡Nivel ${s.level} superado! Presioná para entrar al siguiente →`, true);
+      if (s.mode !== 'exit') hud.prompt('¡Nivel superado! El siguiente camino te espera.', true);
       s.mode = 'exit';
       hud.travel(true);
     } else {
       s.mode = 'platform';
       hud.travel(false);
-      hud.prompt(`Nivel ${s.level} · Ramos ${count}/3 · Saltá entre islas · esquivá la embestida`);
+      hud.prompt(
+        count === level.flowers.length
+          ? '¡Tenés los tres ramos! Llegá a la bandera.'
+          : 'Juntá los tres ramos · saltá entre islas · esquivá a los enemigos',
+      );
     }
   }
   private respawn(): void {

@@ -53,17 +53,14 @@ export class Game implements SceneContext {
     bind('#menuButton', this.menu);
     bind('#music', () => {
       this.session.music = !this.session.music;
-      this.hud.get('#music').textContent = `♫ Música: ${this.session.music ? 'sí' : 'no'}`;
+      this.hud.get('#music').textContent =
+        `♫ Sonido: ${this.session.music ? 'activado' : 'silenciado'}`;
+      this.hud.get('#music').setAttribute('aria-pressed', String(this.session.music));
       if (this.session.music) this.audio.startMusic();
     });
     bind('#travel', () => {
       if (this.garden) this.garden.autoWalk = true;
       else if (this.session.mode === 'exit') this.advanceLevel();
-    });
-    bind('#prompt', () => {
-      if (this.session.mode === 'exit') this.advanceLevel();
-      else if (['approach', 'ready', 'done'].includes(this.session.mode)) this.giveFlowers();
-      else this.kiss();
     });
     this.loop = new GameLoop((dt, time) => {
       if (!this.ready) return;

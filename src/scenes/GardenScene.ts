@@ -35,11 +35,7 @@ export class GardenScene implements Scene {
     if (s.mode === 'approach') {
       if (s.distance() < 2.35) {
         if (!moving) s.face();
-        hud.prompt(
-          s.inventory.available
-            ? 'Presioná E para regalar un ramo 🌷'
-            : 'Ya no quedan ramos; volvé a los niveles anteriores 🌷',
-        );
+        hud.prompt(s.inventory.available ? hud.flowerHint() : 'Ya regalaste todos los ramos 🌷');
       } else hud.prompt(`Acercate a ${s.partner} · ${s.distance().toFixed(1)} m 💕`);
     }
     this.interactions.update(dt);
@@ -48,8 +44,8 @@ export class GardenScene implements Scene {
       hud.prompt(
         s.distance() < 2.35
           ? s.mode === 'done'
-            ? `${s.dedication} · Espacio = otro beso 💋`
-            : 'Presioná Espacio para besar 💋'
+            ? hud.kissHint(true)
+            : hud.kissHint()
           : 'Acercate un poquito más · ' + s.distance().toFixed(1) + ' m',
       );
     }

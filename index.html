@@ -114,25 +114,26 @@
   <div id="renderStatus" role="status">Preparando el jardín…</div>
   <div id="fx"></div>
 
-  <div id="ui"><div id="cameraControls"><button id="cameraLeft" type="button" aria-label="Girar cámara a la izquierda">↶</button><span>CÁMARA</span><button id="cameraRight" type="button" aria-label="Girar cámara a la derecha">↷</button></div><div id="chapter">CAPÍTULO 01<b>El jardín de los encuentros</b></div><button id="travel" type="button">Seguir el caminito →</button><button id="menuButton" class="paperUI" type="button">↶ Volver al inicio</button>
+  <div id="ui"><div id="cameraControls"><button id="cameraLeft" type="button" aria-label="Girar cámara a la izquierda">↶</button><span>CÁMARA</span><button id="cameraRight" type="button" aria-label="Girar cámara a la derecha">↷</button></div><div id="chapter"></div><button id="travel" type="button">Acercarme automáticamente →</button><button id="menuButton" class="paperUI" type="button" title="Volver al menú de personajes">↶ Menú</button>
     <div id="hud" class="paperUI"></div>
     <div id="quest" class="paperUI"><span class="q" data-q="approach">1 · ACERCATE</span><span class="q" data-q="flowers">2 · FLORES</span><span class="q" data-q="kiss">3 · BESO</span></div>
-    <button id="prompt" type="button" aria-live="polite" class="paperUI"></button>
-    <button id="music" class="paperUI" type="button">♫ Música: sí</button>
+    <div id="prompt" role="status" class="paperUI"></div>
+    <div id="keyboardHelp" class="keyboard-only"></div>
+    <button id="music" class="paperUI" type="button" aria-pressed="true" title="Activar o silenciar música, voces y efectos">♫ Sonido: activado</button>
     <div id="toast" class="paperUI">💗</div>
     
   </div>
 
   <div id="mobile">
     <div id="joystick" role="application" aria-label="Joystick de movimiento"><span id="joystickKnob"></span></div>
-    <div class="acts"><button data-action="flowers">🌷<br>FLORES</button><button data-action="jump">⬆️<br>SALTAR</button><button data-action="kiss">💋<br>BESO</button></div>
+    <div class="acts"><button type="button" data-action="flowers">🌷<br>Regalar ramo</button><button type="button" data-action="jump">↑<br>Saltar</button><button type="button" data-action="kiss">💋<br>Besar</button></div>
   </div>
 
   <div id="menu">
     <div id="menuCard" class="paperUI">
       <div class="menuInner">
         <div class="eyebrow">UNA PEQUEÑA HISTORIA DE AMOR</div><h1>Bubu &amp; Dudu</h1><div class="subtitle">Una aventura de papel para dos</div>
-        <div class="tag">Atravesá tres niveles, esquivá enemigos y juntá los ramos.<br>Al final, el jardín los espera.</div>
+        <div class="tag">Superá dos caminos y reuní seis ramos.<br>En el tercer nivel, regaláselos a tu pareja en el jardín.</div>
         <input id="dedication" maxlength="90" value="Para Bettina, con todo mi amor 💗" aria-label="Dedicatoria">
         <div class="chooseLabel">ELEGÍ A QUIÉN CONTROLAR</div>
         <div class="choices">
@@ -145,7 +146,9 @@
             <strong>Dudu</strong><small>un abrazo calentito</small><span class="startHint">JUGAR CONMIGO →</span>
           </button>
         </div>
-        <div class="credit">Personajes de 黄小B · una carta de amor hecha de papel</div><div class="tips">Usá el joystick táctil o <kbd>WASD</kbd>/<kbd>↑↓←→</kbd> · <kbd>J</kbd>/<kbd>X</kbd> saltar · juntá ramos · evitá los mobs · <kbd>E</kbd> usar flores · <kbd>Espacio</kbd> beso · <kbd>R</kbd> reiniciar · <kbd>Esc</kbd> menú</div>
+        <div class="credit">Personajes de 黄小B · una carta de amor hecha de papel</div>
+        <div class="tips keyboard-only"><kbd>WASD</kbd> / flechas: mover · <kbd>J</kbd> / <kbd>X</kbd>: saltar<br>En el jardín: <kbd>E</kbd> regalar ramo · <kbd>Espacio</kbd> besar<br><kbd>Q</kbd> / <kbd>C</kbd>: cámara · <kbd>R</kbd>: reiniciar partida · <kbd>Esc</kbd>: menú</div>
+        <div class="tips touch-only">Movete con el joystick y tocá «Saltar» con el otro dedo.<br>Los ramos se recogen al acercarte. En el jardín aparecen las acciones de pareja.</div>
       </div>
     </div>
   </div>

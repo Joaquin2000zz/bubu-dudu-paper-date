@@ -8,6 +8,7 @@ export class HudView {
   private speaking: { name: CharacterName; until: number } | null = null;
   private dialogue = document.createElement('div');
   private petalT = 0;
+  private touchControls = matchMedia('(pointer: coarse)').matches;
   constructor(
     readonly root: HTMLElement,
     private reducedMotion: boolean,
@@ -16,6 +17,50 @@ export class HudView {
     this.dialogue.setAttribute('role', 'status');
     this.dialogue.setAttribute('aria-live', 'polite');
     root.append(this.dialogue);
+    const setControls = (touch: boolean) => {
+      this.touchControls = touch;
+      root.dataset.controls = touch ? 'touch' : 'keyboard';
+    };
+    setControls(this.touchControls);
+    const pointer = matchMedia('(pointer: coarse)');
+    this.life.listen(pointer, 'change', () => setControls(pointer.matches));
+    this.life.listen(
+      root,
+      'pointerdown',
+      (event) => {
+        if ((event as PointerEvent).pointerType === 'touch') setControls(true);
+      },
+      { passive: true },
+    );
+    this.life.listen(window, 'keydown', (event) => {
+      const e = event as KeyboardEvent;
+      if ((e.target as Element)?.matches?.('input,textarea')) return;
+      if (
+        [
+          'w',
+          'a',
+          's',
+          'd',
+          'arrowup',
+          'arrowdown',
+          'arrowleft',
+          'arrowright',
+          'j',
+          'x',
+          'e',
+          ' ',
+        ].includes(e.key.toLowerCase())
+      )
+        setControls(false);
+    });
+  }
+  flowerHint(): string {
+    return this.touchControls ? 'Tocá «Regalar ramo» 🌷' : 'Presioná E para regalar un ramo 🌷';
+  }
+  kissHint(again = false): string {
+    return this.touchControls
+      ? `Tocá «Besar»${again ? ' para otro beso' : ''} 💋`
+      : `Presioná Espacio para ${again ? 'otro beso' : 'besar'} 💋`;
   }
   get<T extends HTMLElement = HTMLElement>(selector: string): T {
     const node = this.root.querySelector<T>(selector);
@@ -55,7 +100,7 @@ export class HudView {
     this.get('#menu').style.display = 'none';
     this.get('#hud').style.display = 'block';
     this.get('#prompt').style.display = 'block';
-    this.get('#quest').style.display = 'flex';
+    this.get('#quest').style.display = level.kind === 'garden' ? 'flex' : 'none';
     this.get('#chapter').textContent = level.chapter;
     const title = document.createElement('b');
     title.textContent = level.name;
@@ -63,9 +108,11 @@ export class HudView {
     this.get('#quest').innerHTML =
       level.kind === 'garden'
         ? '<span class="q on" data-q="approach">1 · ACERCATE</span><span class="q" data-q="flowers">2 · FLORES</span><span class="q" data-q="kiss">3 · BESO</span>'
-        : `<span class="q on">NIVEL ${s.chapterIndex}/${s.totalLevels}</span><span class="q">RAMOS 0/${level.flowers.length}</span><span class="q">META</span>`;
+        : '';
     this.get('#travel').textContent =
-      level.kind === 'garden' ? 'Seguir el caminito →' : `Entrar al nivel ${s.chapterIndex + 1} →`;
+      level.kind === 'garden'
+        ? 'Acercarme automáticamente →'
+        : `Ir al nivel ${s.chapterIndex + 1} →`;
   }
   showMenu(): void {
     this.speaking = null;
@@ -83,9 +130,23 @@ export class HudView {
       count = level.flowers.filter((f) => s.inventory.has(f.id)).length;
     const html =
       level.kind === 'garden'
-        ? `<strong>Nivel ${s.chapterIndex}/${s.totalLevels} · ${s.chosen}</strong> · Ramos ${s.inventory.available}/${s.flowers}<br>${dedication}<br>WASD/flechas · E ramo · Espacio beso · Besos: <strong>${s.kisses}</strong> 💋`
-        : `<strong>Nivel ${s.chapterIndex}/${s.totalLevels}</strong> · Ramos: ${count}/${level.flowers.length} · Total: ${s.flowers}<br><strong>${s.chosen}</strong> · ${dedication}`;
+        ? `<strong>${s.chosen} · Nivel ${s.chapterIndex}/${s.totalLevels}</strong><br>${dedication}<br>Ramos disponibles: ${s.inventory.available} · Besos: ${s.kisses} 💋`
+        : `<strong>${s.chosen} · Nivel ${s.chapterIndex}/${s.totalLevels}</strong><br>${dedication}<br>Ramos del nivel: ${count}/${level.flowers.length} · Reunidos: ${s.flowers}`;
     if (this.get('#hud').innerHTML !== html) this.get('#hud').innerHTML = html;
+    const garden = level.kind === 'garden',
+      locked = ['flowers', 'kiss'].includes(s.mode);
+    const jump = this.get<HTMLButtonElement>('[data-action="jump"]');
+    const flowers = this.get<HTMLButtonElement>('[data-action="flowers"]');
+    const kiss = this.get<HTMLButtonElement>('[data-action="kiss"]');
+    flowers.hidden = !garden || !s.inventory.available;
+    kiss.hidden = !garden || !['ready', 'done', 'kiss'].includes(s.mode);
+    jump.disabled =
+      !['platform', 'approach', 'ready', 'done'].includes(s.mode) || s.actor.jumpY > 0.02;
+    flowers.disabled = locked || s.distance() > 2.35 || s.actor.jumpY > 0;
+    kiss.disabled = !['ready', 'done'].includes(s.mode) || s.distance() > 2.35 || s.actor.jumpY > 0;
+    this.get('#keyboardHelp').textContent = garden
+      ? `WASD / flechas: mover · J / X: saltar${s.inventory.available ? ' · E: regalar ramo' : ''}${['ready', 'done'].includes(s.mode) ? ' · Espacio: besar' : ''} · Q / C: cámara`
+      : 'WASD / flechas: mover · J / X: saltar · Q / C: cámara';
   }
   say(name: CharacterName, text: string): void {
     this.speaking = { name, until: performance.now() + 3100 };
@@ -111,7 +172,7 @@ export class HudView {
       point = renderer.project(actor.x, 3.4, actor.z);
     this.dialogue.style.left = Math.max(125, Math.min(innerWidth - 125, point.x)) + 'px';
     this.dialogue.style.top =
-      Math.max(innerWidth < 600 ? 220 : 150, Math.min(innerHeight - 270, point.y - 45)) + 'px';
+      Math.max(innerWidth < 600 ? 300 : 150, Math.min(innerHeight - 270, point.y - 45)) + 'px';
   }
   hearts(s: GameSession, renderer: GameRenderer, n = 18): void {
     if (this.reducedMotion || !s.player) return;
