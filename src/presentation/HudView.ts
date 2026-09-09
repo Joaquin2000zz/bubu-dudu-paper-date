@@ -81,17 +81,6 @@ export class HudView {
     node.classList.add('show');
     this.life.later(() => node.classList.remove('show'), duration);
   }
-  quest(active: 'approach' | 'flowers' | 'kiss'): void {
-    const order = { approach: 0, flowers: 1, kiss: 2 };
-    this.get('#quest')
-      .querySelectorAll<HTMLElement>('.q')
-      .forEach((q) => {
-        const key = q.dataset.q as keyof typeof order;
-        q.className = 'q';
-        if (order[key] < order[active]) q.classList.add('done');
-        else if (key === active) q.classList.add('on');
-      });
-  }
   showLevel(level: LevelDefinition, s: GameSession): void {
     document.body.dataset.chapter = String(
       level.theme === 'night' ? 1 : level.theme === 'dawn' ? 2 : 3,
@@ -100,15 +89,10 @@ export class HudView {
     this.get('#menu').style.display = 'none';
     this.get('#hud').style.display = 'block';
     this.get('#prompt').style.display = 'block';
-    this.get('#quest').style.display = level.kind === 'garden' ? 'flex' : 'none';
     this.get('#chapter').textContent = level.chapter;
     const title = document.createElement('b');
     title.textContent = level.name;
     this.get('#chapter').append(title);
-    this.get('#quest').innerHTML =
-      level.kind === 'garden'
-        ? '<span class="q on" data-q="approach">1 · ACERCATE</span><span class="q" data-q="flowers">2 · FLORES</span><span class="q" data-q="kiss">3 · BESO</span>'
-        : '';
     this.get('#travel').textContent =
       level.kind === 'garden'
         ? 'Acercarme automáticamente →'
@@ -120,7 +104,7 @@ export class HudView {
     delete document.body.dataset.chapter;
     document.body.classList.remove('playing');
     this.get('#menu').style.display = 'flex';
-    for (const id of ['#hud', '#quest', '#prompt', '#travel']) this.get(id).style.display = 'none';
+    for (const id of ['#hud', '#prompt', '#travel']) this.get(id).style.display = 'none';
   }
   travel(visible: boolean): void {
     this.get('#travel').style.display = visible ? 'block' : 'none';

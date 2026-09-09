@@ -25,7 +25,6 @@ export class InteractionDirector {
     s.mode = 'flowers';
     s.eventT = 0;
     s.face();
-    hud.quest('flowers');
     hud.prompt('Entregando el ramo… 🌷', true);
     hud.hearts(s, renderer, 10);
     audio.flowerChime();
@@ -46,11 +45,10 @@ export class InteractionDirector {
     s.eventT = 0;
     s.kisses++;
     s.face();
-    hud.quest('kiss');
     hud.prompt('💋 ¡Muá!', true);
     hud.hearts(s, renderer, 30);
     audio.kissChime();
-    hud.toast(s.kisses === 1 ? '💗 PRIMER BESO 💗' : `💗 ${s.kisses} BESOS 💗`);
+    hud.toast('💗 ¡Un beso para vos! 💗');
     return true;
   }
   stage(dt: number): void {
@@ -80,7 +78,6 @@ export class InteractionDirector {
       if (s.eventT > 3.1) {
         s.mode = 'ready';
         s.eventT = 0;
-        hud.quest('kiss');
         hud.prompt(hud.kissHint(), true);
       }
     } else if (s.mode === 'kiss') {
@@ -90,11 +87,7 @@ export class InteractionDirector {
       if (s.eventT > 2.8) {
         s.mode = 'done';
         s.eventT = 0;
-        hud
-          .get('#quest')
-          .querySelectorAll('.q')
-          .forEach((q) => (q.className = 'q done'));
-        hud.prompt(`${s.dedication} · ${s.kisses} ${s.kisses === 1 ? 'beso' : 'besos'} 💗`, true);
+        hud.prompt(hud.kissHint(true), true);
       }
     }
   }

@@ -10,7 +10,6 @@ export class GardenScene implements Scene {
   }
   enter(): void {
     this.context.session.mode = 'approach';
-    this.context.hud.quest('approach');
   }
   exit(): void {
     this.autoWalk = false;
